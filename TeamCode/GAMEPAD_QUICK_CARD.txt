@@ -1,0 +1,168 @@
+# 🎮 Logitech F310 Quick Reference Card
+## Team Penguinauts 32240
+
+```
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                    LOGITECH F310 GAMEPAD                      ┃
+┃                  MECANUM DRIVE CONTROLS                       ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+                          Mode: ●
+                                
+         [LB]                                [RB]
+    SLOW MODE                           TURBO MODE
+     (50%)                                (100%)
+    
+          ┌─────────────────────────────────┐
+         /                                   \
+        /    D-PAD          [Y]               \
+       │      ↑         Front Right            │
+       │   ←  ●  →   [X]      [B]             │
+       │      ↓      Front  Back Right        │
+       │            Left                       │
+       │                [A]                    │
+       │              Back Left                │
+       │                                       │
+       │   [LS]                      [RS]      │
+       │    ●                         ●        │
+       │  DRIVE                    ROTATE      │
+       │ STRAFE                                │
+        \                                     /
+         \  [BACK]  [⚪]  [START]            /
+          └─────────────────────────────────┘
+
+```
+
+## 📋 CONTROLS SUMMARY
+
+### LEFT STICK (LS) - DRIVE & STRAFE
+```
+      ↑ Forward
+      
+  ←       →
+Left      Right
+(Strafe)  (Strafe)
+      
+      ↓ Backward
+```
+
+### RIGHT STICK (RS) - ROTATE
+```
+  ← Rotate     Rotate →
+    Left        Right
+```
+
+### BUMPERS - SPEED CONTROL
+- **LB (Left Bumper)**: Slow Mode (50%)
+- **RB (Right Bumper)**: Turbo Mode (100%)
+- **Neither**: Normal Mode (75%) ← Default
+
+### FACE BUTTONS - MOTOR TEST ONLY
+- **Y**: Test Front Right Motor
+- **X**: Test Front Left Motor
+- **B**: Test Back Right Motor
+- **A**: Test Back Left Motor
+
+### D-PAD - MOTOR TEST ONLY
+- **↑ (Up)**: All Motors Forward
+- **↓ (Down)**: All Motors Backward
+
+---
+
+## ⚠️ IMPORTANT CHECKS
+
+✅ **Mode Switch on BACK of gamepad:**
+```
+   [X] [D]  ← Must be on "D"
+```
+
+✅ **Connection Status:**
+- Look for 🎮✓ icon on Driver Station
+- Should show "Gamepad 1" connected
+
+✅ **USB Cable:**
+- Securely plugged into Driver Hub
+- Cable organized (not tangled)
+
+---
+
+## 🚦 DRIVER STARTUP PROCEDURE
+
+1. ✅ Plug in F310 gamepad
+2. ✅ Check mode switch: **"D"**
+3. ✅ Driver Station: Select OpMode
+4. ✅ Press **INIT** button
+5. ✅ Press **START** button
+6. ✅ **DRIVE!**
+
+---
+
+## 💡 QUICK TIPS
+
+**For Precise Movement:**
+- Hold LB (Left Bumper) for Slow Mode
+- Make small stick movements
+- Practice!
+
+**For Speed:**
+- Hold RB (Right Bumper) for Turbo Mode
+- Use for crossing field quickly
+- Be careful near walls!
+
+**Combined Movements:**
+- Use BOTH sticks at once!
+- Example: Left stick forward + Right stick left
+  = Drive forward while rotating
+
+**Emergency Stop:**
+- Press **STOP** button on Driver Station
+- Or release all sticks
+
+---
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  TEAM: Penguinauts                    NUMBER: 32240          ┃
+┃  SEASON: INTO THE DEEP (2024-2025)                          ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+Print this card and keep it at your Driver Station! 🐧
+```
+
+---
+
+# 🎮 FIELD-RELATIVE MODE DIFFERENCES
+
+When using **"Penguinauts: Field Relative Drive"**:
+
+### ADDITIONAL CONTROLS:
+
+**A Button** = Reset Field Orientation
+- Press when robot is facing forward
+- Sets current direction as "field forward"
+
+**Left Bumper (LB)** = Robot-Relative Mode (hold)
+- Hold LB to drive like RC car
+- Release LB to return to field-relative
+
+**Right Bumper (RB)** = Slow Mode (50%)
+- Same as standard mode
+
+### HOW IT WORKS:
+- **Left stick** direction = direction on FIELD
+- Robot moves that direction regardless of rotation
+- Great for competition!
+- Takes practice to master
+
+---
+
+# 📞 TROUBLESHOOTING
+
+| Problem | Fix |
+|---------|-----|
+| **No response** | Check mode switch = "D" |
+| **Wrong movements** | Mode switch = "D" (not X) |
+| **Gamepad disconnects** | Check USB cable |
+| **Robot drifts** | Normal - old sticks |
+
+**Still having issues?** Check LOGITECH_F310_GUIDE.md for detailed help!
+
