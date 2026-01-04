@@ -1,0 +1,121 @@
+=================================================================
+    TEAM PENGUINAUTS 32240 - turnDegrees() QUICK REFERENCE
+=================================================================
+
+📍 FUNCTION SIGNATURE
+---------------------
+turnDegrees(double degrees)
+
+🎯 WHAT IT DOES
+---------------
+Turns the robot in place (without moving forward/backward/sideways)
+by the specified number of degrees.
+
+⚙️ PARAMETERS
+-------------
+degrees (double):
+  • POSITIVE values = Clockwise turn (turn RIGHT)
+  • NEGATIVE values = Counter-clockwise turn (turn LEFT)
+  • Any value from -360 to +360 (or beyond!)
+
+📝 USAGE EXAMPLES
+-----------------
+
+Basic Turns:
+  turnDegrees(90);      // Turn right 90 degrees
+  turnDegrees(-90);     // Turn left 90 degrees
+  turnDegrees(180);     // Turn around (180 degrees)
+  turnDegrees(45);      // Turn right 45 degrees
+  turnDegrees(-45);     // Turn left 45 degrees
+
+Multiple Turns:
+  turnDegrees(90);      // Turn right
+  sleep(500);
+  turnDegrees(90);      // Turn right again (total 180°)
+  sleep(500);
+  turnDegrees(-180);    // Return to start
+
+In Autonomous Sequences:
+  driveForward(0.5, 36);    // Drive forward
+  turnDegrees(90);           // Turn to face new direction
+  strafeRight(0.5, 12);     // Strafe sideways
+  turnDegrees(-45);          // Adjust angle
+  driveForward(0.5, 24);    // Drive to target
+
+🔧 CALIBRATION (REQUIRED!)
+--------------------------
+Before using turnDegrees(), you MUST calibrate COUNTS_PER_DEGREE!
+
+1. Open Penguinauts_AutoTemplate.java
+2. Find COUNTS_PER_DEGREE constant (around line 52)
+3. Default value: 10.0 (needs adjustment!)
+4. Test: Run turnDegrees(360)
+5. Measure actual rotation
+6. Adjust:
+   • Robot turned TOO FAR → DECREASE value
+   • Robot turned TOO LITTLE → INCREASE value
+7. Repeat until accurate
+
+Quick Formula:
+  New Value = Current Value × (360 / Actual Degrees)
+
+📖 DETAILED GUIDES
+------------------
+• TURN_CALIBRATION_GUIDE.md - Complete calibration instructions
+• Run "Penguinauts: Turn Calibration" OpMode - Automated test
+
+✅ TESTING CHECKLIST
+--------------------
+Before competition, verify:
+  ☐ turnDegrees(360) returns to exact start position
+  ☐ turnDegrees(90) is accurate (±3°)
+  ☐ turnDegrees(-90) is accurate (±3°)
+  ☐ turnDegrees(180) is accurate (±3°)
+  ☐ Robot doesn't drift forward/backward during turn
+  ☐ Consistent on competition surface
+
+⚠️ COMMON ISSUES
+----------------
+Issue: Robot doesn't turn at all
+Fix: Check motor connections and encoder cables
+
+Issue: Robot moves forward/backward while turning
+Fix: Verify motor directions (lines 68-71 in AutoTemplate)
+
+Issue: Turns are inconsistent
+Fix: Check battery charge, clean wheels, reduce TURN_SPEED
+
+Issue: Turn amount varies
+Fix: Calibrate COUNTS_PER_DEGREE on actual competition surface
+
+💡 PRO TIPS
+-----------
+✓ Always add sleep(500) between movements for stability
+✓ Use smaller speed values (0.3-0.5) for more accurate turns
+✓ Test on the same surface you'll compete on
+✓ Recalibrate if robot weight changes significantly
+✓ Keep battery fully charged for consistent results
+✓ Mark your robot's "front" clearly so you know orientation
+
+🏆 COMPETITION SEQUENCE EXAMPLE
+-------------------------------
+// Autonomous routine example
+driveForward(0.5, 30);      // Leave starting zone
+turnDegrees(45);             // Angle toward target
+driveForward(0.4, 18);      // Approach target
+turnDegrees(-90);            // Face scoring position
+// Score element here
+turnDegrees(180);            // Turn around
+driveForward(0.6, 36);      // Return to zone
+
+📂 FILE LOCATIONS
+-----------------
+• Main Function: TeamCode/src/.../Penguinauts_AutoTemplate.java
+• Calibration Test: TeamCode/src/.../AutoCode.java
+• Full Guide: TeamCode/TURN_CALIBRATION_GUIDE.md
+
+🐧 TEAM PENGUINAUTS 32240 | INTO THE DEEP 2024-2025
+=================================================================
+Print this card and keep at your driver station!
+=================================================================
+

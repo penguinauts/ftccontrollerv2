@@ -4,10 +4,27 @@
  * Use this as a starting point for creating autonomous routines.
  *
  * This template shows basic autonomous movements with mecanum drive:
- * - Drive forward
- * - Strafe
- * - Rotate
+ * - Drive forward/backward (encoder-based)
+ * - Strafe left/right (encoder-based)
+ * - Turn by degrees (encoder-based) - NEW!
  * - Combined movements
+ * 
+ * NEW FEATURE: turnDegrees(degrees)
+ * ===================================
+ * Turn your robot in place by any number of degrees!
+ * 
+ * Usage Examples:
+ *   turnDegrees(90);    // Turn 90 degrees clockwise (right)
+ *   turnDegrees(-90);   // Turn 90 degrees counter-clockwise (left)
+ *   turnDegrees(180);   // Turn around 180 degrees
+ *   turnDegrees(45);    // Turn 45 degrees clockwise
+ * 
+ * IMPORTANT - Calibration Required:
+ * 1. Adjust COUNTS_PER_DEGREE constant (around line 52)
+ * 2. Test: Run turnDegrees(360) and measure actual rotation
+ * 3. If robot turns too far: DECREASE the constant
+ * 4. If robot turns too little: INCREASE the constant
+ * 5. Repeat until a 360-degree turn is accurate
  */
 
 package org.firstinspires.ftc.teamcode;
@@ -41,6 +58,13 @@ public class Penguinauts_AutoTemplate extends LinearOpMode {
     private static final double WHEEL_DIAMETER_INCHES = 4.0;   // For 100mm mecanum wheels
     private static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
                                                   (WHEEL_DIAMETER_INCHES * 3.1415);
+    
+    // Turn calibration - TUNE THIS VALUE for accurate turns!
+    // This represents encoder counts needed to turn 1 degree
+    // To calibrate: Run turnDegrees(360), measure actual turn, adjust this value
+    // If robot turns too far: decrease this value
+    // If robot turns too little: increase this value
+    private static final double COUNTS_PER_DEGREE = 10.0;  // Start value - needs calibration!
 
     @Override
     public void runOpMode() {
@@ -92,9 +116,14 @@ public class Penguinauts_AutoTemplate extends LinearOpMode {
             strafeRight(0.5, 12.0);  // Strafe right 12 inches
             sleep(500);
             
-            telemetry.addData("Step", "3. Rotate");
+            telemetry.addData("Step", "3. Turn 90 Degrees");
             telemetry.update();
-            rotateRight(0.3, 1.0);  // Rotate right for 1 second
+            turnDegrees(90);  // Turn 90 degrees clockwise
+            sleep(500);
+            
+            telemetry.addData("Step", "3.5. Turn -90 Degrees");
+            telemetry.update();
+            turnDegrees(-90);  // Turn 90 degrees counter-clockwise (back to original)
             sleep(500);
             
             telemetry.addData("Step", "4. Drive Backward");
@@ -141,6 +170,41 @@ public class Penguinauts_AutoTemplate extends LinearOpMode {
         int brTarget = backRightDrive.getCurrentPosition() + moveCounts;
         
         runToPosition(flTarget, frTarget, blTarget, brTarget, speed);
+    }
+
+    /**
+     * Turn the robot by a specific number of degrees in place
+     * Positive degrees = clockwise (right turn)
+     * Negative degrees = counter-clockwise (left turn)
+     * 
+     * Examples:
+     *   turnDegrees(90)   - Turn 90 degrees clockwise
+     *   turnDegrees(-90)  - Turn 90 degrees counter-clockwise
+     *   turnDegrees(180)  - Turn 180 degrees (turn around)
+     *   turnDegrees(45)   - Turn 45 degrees clockwise
+     * 
+     * CALIBRATION REQUIRED:
+     * Adjust COUNTS_PER_DEGREE constant at the top of the file
+     * Test by running turnDegrees(360) and measuring the actual rotation
+     */
+    private void turnDegrees(double degrees) {
+        if (!opModeIsActive()) return;
+        
+        // Calculate encoder counts needed for this turn
+        // Positive degrees = clockwise, negative = counter-clockwise
+        int turnCounts = (int)(degrees * COUNTS_PER_DEGREE);
+        
+        // For turning in place:
+        // - Left motors move forward for clockwise turn (positive)
+        // - Right motors move backward for clockwise turn (negative)
+        // This makes the robot spin around its center point
+        int flTarget = frontLeftDrive.getCurrentPosition() + turnCounts;
+        int frTarget = frontRightDrive.getCurrentPosition() - turnCounts;
+        int blTarget = backLeftDrive.getCurrentPosition() + turnCounts;
+        int brTarget = backRightDrive.getCurrentPosition() - turnCounts;
+        
+        // Use TURN_SPEED for smooth, controlled rotation
+        runToPosition(flTarget, frTarget, blTarget, brTarget, TURN_SPEED);
     }
 
     /**

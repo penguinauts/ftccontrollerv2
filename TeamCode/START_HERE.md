@@ -77,6 +77,34 @@ Organization of all code files.
 - Naming conventions
 - How to create new OpModes
 
+### **10. IMPLEMENTATION_SUMMARY.md** ⭐ **NEW FEATURE!**
+New turnDegrees() function for autonomous!
+- Turn robot by specific degrees
+- Encoder-based precision
+- Getting started guide
+- **→ READ THIS FOR AUTONOMOUS PROGRAMMING!**
+
+### **11. TURN_CALIBRATION_GUIDE.md**
+Complete guide to calibrating turn function.
+- Step-by-step calibration
+- Troubleshooting
+- How it works
+- Competition tips
+
+### **12. TURN_DEGREES_QUICK_REFERENCE.txt**
+Quick reference for turnDegrees() function.
+- Usage examples
+- Common issues
+- Pro tips
+- **→ PRINT FOR AUTONOMOUS PROGRAMMING!**
+
+### **13. TURN_VISUAL_GUIDE.md**
+Visual explanation of how turning works.
+- Diagrams and illustrations
+- Motor mechanics
+- Example sequences
+- Understanding the math
+
 ---
 
 ## 📁 **FILE ORGANIZATION**
@@ -142,7 +170,12 @@ TeamCode/
 
 **→ Create autonomous routines**
 - Start with: `Penguinauts_AutoTemplate.java`
-- Reference: `CODE_STRUCTURE.md` (Autonomous OpModes section)
+- Use new: `turnDegrees()` function! ⭐
+- Calibrate with: "Penguinauts: Turn Calibration" OpMode
+- Read: `IMPLEMENTATION_SUMMARY.md`
+- Reference: `TURN_DEGREES_QUICK_REFERENCE.txt`
+- Visual guide: `TURN_VISUAL_GUIDE.md`
+- Detailed help: `TURN_CALIBRATION_GUIDE.md`
 
 ---
 
@@ -153,6 +186,7 @@ For best results, print these and keep them at your robot station:
 1. ✅ **QUICK_START_CHECKLIST.md** - For setup
 2. ✅ **GAMEPAD_QUICK_CARD.txt** - For drivers (laminate this!)
 3. ✅ **ROBOT_ORIENTATION_DIAGRAM.md** - For reference
+4. ✅ **TURN_DEGREES_QUICK_REFERENCE.txt** - For autonomous ⭐ NEW!
 
 ---
 
