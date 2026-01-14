@@ -324,10 +324,10 @@ If your hub is mounted differently, you'll need to update `Penguinauts_FieldRela
 │ Control Hub:                            │
 │                                         │
 │ Motor Ports:                            │
-│   Port 0: front_left_drive   [Motor]   │
-│   Port 1: front_right_drive  [Motor]   │
-│   Port 2: back_left_drive    [Motor]   │
-│   Port 3: back_right_drive   [Motor]   │
+│   Port 0: BL                 [Motor]   │
+│   Port 1: BR                 [Motor]   │
+│   Port 2: FL                 [Motor]   │
+│   Port 3: FR                 [Motor]   │
 │                                         │
 │ I2C Bus 0:                              │
 │   imu                        [IMU]     │

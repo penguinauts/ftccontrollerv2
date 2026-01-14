@@ -4,7 +4,7 @@
 ```
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃                    LOGITECH F310 GAMEPAD                      ┃
-┃                  MECANUM DRIVE CONTROLS                       ┃
+┃         MECANUM DRIVE + SHOOTER CONTROLS (2025)               ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
                           Mode: ●
@@ -14,14 +14,16 @@
      (50%)                                (100%)
     
           ┌─────────────────────────────────┐
-         /                                   \
-        /    D-PAD          [Y]               \
-       │      ↑         Front Right            │
+         /    [LT]                  [RT]     \
+        /   📥 INTAKE           🎯 SHOOTER     \
+       │                                       │
+       │    D-PAD          [Y]                 │
+       │      ↑         ↩️ EJECT               │
        │   ←  ●  →   [X]      [B]             │
-       │      ↓      Front  Back Right        │
-       │            Left                       │
+       │      ↓      ⏹️STOP   🛑STOP             │
+       │             INTAKE  SHOOTER           │
        │                [A]                    │
-       │              Back Left                │
+       │              (future)                 │
        │                                       │
        │   [LS]                      [RS]      │
        │    ●                         ●        │
@@ -35,7 +37,9 @@
 
 ## 📋 CONTROLS SUMMARY
 
-### LEFT STICK (LS) - DRIVE & STRAFE
+### DRIVE CONTROLS
+
+**LEFT STICK (LS) - DRIVE & STRAFE**
 ```
       ↑ Forward
       
@@ -46,26 +50,47 @@ Left      Right
       ↓ Backward
 ```
 
-### RIGHT STICK (RS) - ROTATE
+**RIGHT STICK (RS) - ROTATE**
 ```
   ← Rotate     Rotate →
     Left        Right
 ```
 
-### BUMPERS - SPEED CONTROL
+**BUMPERS - SPEED CONTROL**
 - **LB (Left Bumper)**: Slow Mode (50%)
 - **RB (Right Bumper)**: Turbo Mode (100%)
 - **Neither**: Normal Mode (75%) ← Default
 
-### FACE BUTTONS - MOTOR TEST ONLY
-- **Y**: Test Front Right Motor
-- **X**: Test Front Left Motor
-- **B**: Test Back Right Motor
-- **A**: Test Back Left Motor
+### INTAKE CONTROLS 📥
 
-### D-PAD - MOTOR TEST ONLY
-- **↑ (Up)**: All Motors Forward
-- **↓ (Down)**: All Motors Backward
+**LEFT TRIGGER (LT)** 
+- **Press once**: Run intake motors forward (collect game elements)
+- Default: 100% power (full speed)
+- Adjustable via FTC Dashboard
+- ⚡ Intake runs continuously until stopped!
+
+**Y BUTTON** 
+- **Press**: Reverse intake (eject/release game elements)
+- Use to clear jams
+- Use to release elements
+
+**X BUTTON** 
+- **Press**: Stop intake motors immediately
+- Use after collecting elements
+- Use when repositioning robot
+
+### SHOOTER CONTROLS 🎯
+
+**RIGHT TRIGGER (RT)** 
+- **Press once**: Run shooter motors at configured speed
+- Default: 100% power (full speed)
+- Adjustable via FTC Dashboard
+- ⚡ Shooter runs continuously until stopped!
+
+**B BUTTON** 
+- **Press**: Stop shooter motors immediately
+- Use after ball has been shot
+- Use when repositioning robot
 
 ---
 
@@ -90,10 +115,11 @@ Left      Right
 
 1. ✅ Plug in F310 gamepad
 2. ✅ Check mode switch: **"D"**
-3. ✅ Driver Station: Select OpMode
+3. ✅ Driver Station: Select "Penguinauts: Mecanum Drive"
 4. ✅ Press **INIT** button
-5. ✅ Press **START** button
-6. ✅ **DRIVE!**
+5. ✅ Check telemetry shows "Shooter: Motors found!"
+6. ✅ Press **START** button
+7. ✅ **DRIVE & SHOOT!**
 
 ---
 
@@ -114,19 +140,116 @@ Left      Right
 - Example: Left stick forward + Right stick left
   = Drive forward while rotating
 
+**Shooter Tips:**
+- Press RT only when ready to shoot
+- Keep RT pressed until ball leaves shooter
+- Press B immediately after shooting
+- ⚠️ Don't run shooter continuously (motor wear!)
+
 **Emergency Stop:**
 - Press **STOP** button on Driver Station
 - Or release all sticks
+- Shooter stops automatically when OpMode stops
+
+---
+
+## 🎯 SHOOTER OPERATION
+
+### Normal Shooting Sequence:
+
+1. **Position Robot** - Drive to shooting position
+2. **Prepare** - Ensure ball is in shooter mechanism
+3. **SHOOT** - Press & hold Right Trigger
+4. **Stop** - Press B button after ball shoots
+5. **Repeat** - Reload and shoot again
+
+### Speed Adjustment (via FTC Dashboard):
+
+The shooter speed can be adjusted in real-time:
+
+1. Connect laptop to robot WiFi
+2. Open browser: `http://192.168.43.1:8080/dash`
+3. Find **SHOOTER_POWER** variable
+4. Adjust slider (0.0 to 1.0)
+5. Default: **1.0** (100% speed)
+6. Test different speeds for accuracy
+
+**Common Settings:**
+- **1.0** = Maximum power (long distance)
+- **0.85** = Good balance (medium distance)
+- **0.70** = Close range shots
+- **0.50** = Very close/testing
+
+---
+
+## 🧪 TESTING THE SHOOTER
+
+### Initial Test (Use "Penguinauts: Shooter Test" OpMode):
+
+**Controls in Shooter Test:**
+- **RT (Right Trigger)**: Run both motors at full speed
+- **A Button**: Stop all motors
+- **X Button**: Test LEFT motor only
+- **B Button**: Test RIGHT motor only
+- **Y Button**: Run both at 50% (safe test)
+- **D-Pad Up/Down**: Adjust speed by 10%
+
+**What to Check:**
+1. ✅ Both motors spin smoothly
+2. ✅ Motors spin INWARD (toward each other)
+3. ✅ Ball shoots FORWARD (not sideways)
+4. ✅ No unusual sounds or vibrations
+5. ✅ Consistent shooting distance
+
+### Direction Check:
+
+**View from BEHIND robot:**
+```
+        Ball flies this way →
+              ↓
+    [Left Motor]  [Right Motor]
+         ↓→           ←↓
+    (Clockwise)  (Counter-clockwise)
+    
+    Both motors spin INWARD
+```
+
+**If direction is wrong:**
+- See SHOOTER_CONFIG_GUIDE.md
+- Reverse motor direction in code or config
 
 ---
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃  TEAM: Penguinauts                    NUMBER: 32240          ┃
 ┃  SEASON: INTO THE DEEP (2024-2025)                          ┃
+┃  UPDATED: January 2025 - With Shooter Controls! 🎯          ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 Print this card and keep it at your Driver Station! 🐧
 ```
+
+---
+
+## 📋 QUICK REFERENCE SUMMARY
+
+### DRIVE CONTROLS:
+- **Left Stick**: Forward/Backward/Strafe
+- **Right Stick**: Rotate
+- **LB**: Slow Mode (50%)
+- **RB**: Turbo Mode (100%)
+
+### INTAKE CONTROLS:
+- **Left Trigger**: 📥 Collect Elements
+- **Y Button**: ↩️ Eject/Reverse
+- **X Button**: ⏹️ Stop Intake
+
+### SHOOTER CONTROLS:
+- **Right Trigger**: 🎯 Start Shooter
+- **B Button**: 🛑 Stop Shooter
+
+### MOTOR TEST OPMODE (For testing only):
+See "Penguinauts: Shooter Test" OpMode
 
 ---
 
@@ -163,6 +286,33 @@ When using **"Penguinauts: Field Relative Drive"**:
 | **Wrong movements** | Mode switch = "D" (not X) |
 | **Gamepad disconnects** | Check USB cable |
 | **Robot drifts** | Normal - old sticks |
+| **Shooter doesn't work** | Check config, see telemetry |
+| **Shooter runs backward** | See SHOOTER_CONFIG_GUIDE.md |
+| **Weak shooting** | Check battery, increase speed |
+| **B button not stopping** | Hold button for 1 second |
 
-**Still having issues?** Check LOGITECH_F310_GUIDE.md for detailed help!
+**Still having issues?** 
+- Check LOGITECH_F310_GUIDE.md for gamepad help
+- Check SHOOTER_CONFIG_GUIDE.md for shooter setup
+- Check telemetry on Driver Station for error messages
+
+---
+
+## 📚 ADDITIONAL DOCUMENTATION
+
+### For Shooter Setup:
+→ **SHOOTER_CONFIG_GUIDE.md** - Complete configuration guide
+
+### For Hardware Details:
+→ **HARDWARE_SETUP_DIAGRAM.md** - Wiring diagrams
+
+### For Gamepad Details:
+→ **LOGITECH_F310_GUIDE.md** - Detailed gamepad guide
+
+### For Code Understanding:
+→ **CODE_STRUCTURE.md** - Code organization
+
+---
+
+**Ready to Drive & Shoot! 🐧🎯**
 

@@ -283,10 +283,10 @@ Before you start, verify you have:
 **Gamepad:** Logitech F310 (DirectInput mode)
 
 **Motor Configuration:**
-- Port 0: Front Left (`front_left_drive`)
-- Port 1: Front Right (`front_right_drive`)
-- Port 2: Back Left (`back_left_drive`)
-- Port 3: Back Right (`back_right_drive`)
+- Port 0: Back Left (`BL`)
+- Port 1: Back Right (`BR`)
+- Port 2: Front Left (`FL`)
+- Port 3: Front Right (`FR`)
 
 **Orientation:**
 - Front = Wheels closer to observer

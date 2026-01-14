@@ -24,10 +24,10 @@ Print this page and follow step-by-step! ✓ each box as you complete it.
 - [ ] Select "Control Hub Portal" → "Control Hub"
 
 **Step 3: Configure Motors (⚠️ MUST BE EXACT!)**
-- [ ] Port 0: Motor → Name: `front_left_drive`
-- [ ] Port 1: Motor → Name: `front_right_drive`
-- [ ] Port 2: Motor → Name: `back_left_drive`
-- [ ] Port 3: Motor → Name: `back_right_drive`
+- [ ] Port 0: Motor → Name: `BL`
+- [ ] Port 1: Motor → Name: `BR`
+- [ ] Port 2: Motor → Name: `FL`
+- [ ] Port 3: Motor → Name: `FR`
 
 **Step 4: Save and Activate**
 - [ ] Tap "Done"

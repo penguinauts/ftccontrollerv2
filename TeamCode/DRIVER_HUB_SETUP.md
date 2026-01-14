@@ -155,10 +155,10 @@ Configure each port exactly like this:
 ┌─────────────────────────────────────────┐
 │ Control Hub - Motor Ports               │
 ├─────────────────────────────────────────┤
-│ Port 0: front_left_drive    [GoBILDA]  │
-│ Port 1: front_right_drive   [GoBILDA]  │
-│ Port 2: back_left_drive     [GoBILDA]  │
-│ Port 3: back_right_drive    [GoBILDA]  │
+│ Port 0: BL                  [GoBILDA]  │
+│ Port 1: BR                  [GoBILDA]  │
+│ Port 2: FL                  [GoBILDA]  │
+│ Port 3: FR                  [GoBILDA]  │
 └─────────────────────────────────────────┘
 ```
 

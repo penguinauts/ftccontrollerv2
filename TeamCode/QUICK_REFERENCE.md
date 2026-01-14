@@ -69,10 +69,10 @@ TEST POWER: 50%
 ## Hardware Configuration Reminder
 
 **Motor Ports (Control Hub):**
-- Port 0: front_left_drive
-- Port 1: front_right_drive
-- Port 2: back_left_drive
-- Port 3: back_right_drive
+- Port 0: BL (Back Left)
+- Port 1: BR (Back Right)
+- Port 2: FL (Front Left)
+- Port 3: FR (Front Right)
 
 **IMU:** Built-in (name: "imu")
 
