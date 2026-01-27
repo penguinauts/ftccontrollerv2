@@ -66,26 +66,18 @@ public class Penguinauts_AutoCode extends LinearOpMode {
 
         imu.resetYaw();
         double heading = getHeading();
-
-        driveStraight(DRIVE_DISTANCE, LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER, heading);
+        driveStraight(20, 1, 0.4,0);
         sleep(200);
-
-        strafeRight(10, 0.5, heading);
+        turnDegrees(360);
         sleep(200);
-
-        strafeLeft(10, 0.5, heading);
+        driveStraight(-20, 0.4, 0.4,0);
         sleep(200);
+        strafeRight(20,0.4,0);
+        sleep(200);
+        strafeLeft(20,0.4,0);
 
-        turnDegrees(90);
-        sleep(500);
 
-        turnDegrees(-90);
-        sleep(500);
 
-        turnDegrees(180);
-        sleep(500);
-
-        turnDegrees(-180);
     }
 
     // ================= MOTOR UTIL =================
@@ -203,6 +195,153 @@ public class Penguinauts_AutoCode extends LinearOpMode {
     public void strafeRight(double inches, double power, double heading) {
         strafe(Math.abs(inches), power, heading);
     }
+    // ================= DIAGONAL (RIGHT-FORWARD) =================
+
+    public void driveDiagonalRight(double inches, double power, double heading) {
+        int ticks = (int) (Math.abs(inches) * TICKS_PER_INCH);
+        double dir = Math.signum(inches);
+
+        resetEncoders();
+
+        while (opModeIsActive()) {
+
+            double avg =
+                    (Math.abs(frontLeft.getCurrentPosition())
+                            + Math.abs(backRight.getCurrentPosition())) / 2.0;
+
+            if (avg >= ticks) break;
+
+            double correction = headingCorrection(heading);
+
+            // Diagonal right-forward
+            double fl = (power * dir) - correction;
+            double fr = 0 + correction;
+            double bl = 0 - correction;
+            double br = (power * dir) + correction;
+
+            double max = Math.max(1,
+                    Math.max(Math.abs(fl),
+                            Math.max(Math.abs(fr),
+                                    Math.max(Math.abs(bl), Math.abs(br)))));
+
+            frontLeft.setPower(fl / max);
+            frontRight.setPower(fr / max);
+            backLeft.setPower(bl / max);
+            backRight.setPower(br / max);
+        }
+
+        stopMotors();
+    }
+    // ================= DIAGONAL (LEFT-FORWARD) =================
+
+    public void driveDiagonalLeft(double inches, double power, double heading) {
+        int ticks = (int) (Math.abs(inches) * TICKS_PER_INCH);
+        double dir = Math.signum(inches);
+
+        resetEncoders();
+
+        while (opModeIsActive()) {
+
+            double avg =
+                    (Math.abs(frontRight.getCurrentPosition())
+                            + Math.abs(backLeft.getCurrentPosition())) / 2.0;
+
+            if (avg >= ticks) break;
+
+            double correction = headingCorrection(heading);
+
+            // Diagonal left-forward
+            double fl = 0 - correction;
+            double fr = (power * dir) + correction;
+            double bl = (power * dir) - correction;
+            double br = 0 + correction;
+
+            double max = Math.max(1,
+                    Math.max(Math.abs(fl),
+                            Math.max(Math.abs(fr),
+                                    Math.max(Math.abs(bl), Math.abs(br)))));
+
+            frontLeft.setPower(fl / max);
+            frontRight.setPower(fr / max);
+            backLeft.setPower(bl / max);
+            backRight.setPower(br / max);
+        }
+
+        stopMotors();
+    }
+    // ================= DIAGONAL (LEFT-BACKWARD) =================
+
+    public void driveDiagonalLeftBack(double inches, double power, double heading) {
+        int ticks = (int) (Math.abs(inches) * TICKS_PER_INCH);
+        double dir = -Math.signum(inches); // backward
+
+        resetEncoders();
+
+        while (opModeIsActive()) {
+
+            double avg =
+                    (Math.abs(frontRight.getCurrentPosition())
+                            + Math.abs(backLeft.getCurrentPosition())) / 2.0;
+
+            if (avg >= ticks) break;
+
+            double correction = headingCorrection(heading);
+
+            double fl = 0 - correction;
+            double fr = (power * dir) + correction;
+            double bl = (power * dir) - correction;
+            double br = 0 + correction;
+
+            double max = Math.max(1,
+                    Math.max(Math.abs(fl),
+                            Math.max(Math.abs(fr),
+                                    Math.max(Math.abs(bl), Math.abs(br)))));
+
+            frontLeft.setPower(fl / max);
+            frontRight.setPower(fr / max);
+            backLeft.setPower(bl / max);
+            backRight.setPower(br / max);
+        }
+
+        stopMotors();
+    }
+// ================= DIAGONAL (RIGHT-BACKWARD) =================
+
+    public void driveDiagonalRightBack(double inches, double power, double heading) {
+        int ticks = (int) (Math.abs(inches) * TICKS_PER_INCH);
+        double dir = -Math.signum(inches); // backward
+
+        resetEncoders();
+
+        while (opModeIsActive()) {
+
+            double avg =
+                    (Math.abs(frontLeft.getCurrentPosition())
+                            + Math.abs(backRight.getCurrentPosition())) / 2.0;
+
+            if (avg >= ticks) break;
+
+            double correction = headingCorrection(heading);
+
+            double fl = (power * dir) - correction;
+            double fr = 0 + correction;
+            double bl = 0 - correction;
+            double br = (power * dir) + correction;
+
+            double max = Math.max(1,
+                    Math.max(Math.abs(fl),
+                            Math.max(Math.abs(fr),
+                                    Math.max(Math.abs(bl), Math.abs(br)))));
+
+            frontLeft.setPower(fl / max);
+            frontRight.setPower(fr / max);
+            backLeft.setPower(bl / max);
+            backRight.setPower(br / max);
+        }
+
+        stopMotors();
+    }
+
 
     // ================= TURN =================
 
