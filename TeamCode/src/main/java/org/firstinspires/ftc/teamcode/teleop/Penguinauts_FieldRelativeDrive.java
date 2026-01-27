@@ -8,18 +8,25 @@
  * - Left stick: Drive in any direction (field-relative)
  * - Right stick: Rotate left/right
  * - A button: Reset field orientation (set current direction as forward)
- * - Left bumper: Robot-relative mode (like RC car)
- * - Right bumper: Slow mode (50% speed)
- * - Default speed: 75%
+ * - Drive speed: 63% (fixed)
  *
  * SHOOTER CONTROLS:
- * - Right Trigger: Start/run shooter motors at configured speed
+ * - Left Bumper: Start shooter at FRONT zone speed (63%) - close shots
+ * - Left Trigger: Start shooter at BACK zone speed (73%) - far shots
  * - B Button: Stop shooter motors
  *
- * INTAKE CONTROLS:
- * - Left Trigger: Run intake forward (collect) - hold to run
- * - Y Button: Run intake reverse (eject) - hold to run
- * - Release button: Intake stops automatically
+ * FRONT INTAKE CONTROLS (Front + Middle rollers):
+ * - Right Trigger: Run forward (collect) - hold to run
+ * - Y Button: Run reverse (eject) - hold to run
+ *
+ * BACK INTAKE CONTROLS (Last roller - for shooting):
+ * - Right Bumper: Open trap door + run back intake (outtake ball) - hold to run
+ * - A Button: Run reverse (pull back) - hold to run
+ *
+ * TRAP DOOR SERVO:
+ *   Control Hub Servo Port 0 - "TD"
+ *   REV 41-1097 270-degree servo
+ *   Closed when released, Open when RB pressed
  *
  * Motor Configuration (as seen from behind the robot):
  *   Drive Motors (Control Hub):
@@ -31,8 +38,8 @@
  *     Shooter Left  (port 0) - "SL"
  *     Shooter Right (port 1) - "SR"
  *   Intake Motors (Expansion Hub):
- *     Intake Front (port 2) - "IF"
- *     Intake Back  (port 3) - "IB"
+ *     Intake Front (port 2) - "IF" - Controls front and middle rollers
+ *     Intake Back  (port 3) - "IB" - Controls last roller (shooting)
  *
  * IMU Configuration:
  *   Control Hub IMU - "imu"
@@ -40,12 +47,17 @@
 
 package org.firstinspires.ftc.teamcode.teleop;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -61,32 +73,59 @@ public class Penguinauts_FieldRelativeDrive extends LinearOpMode {
     private DcMotor backLeftDrive = null;
     private DcMotor backRightDrive = null;
     
-    // Declare shooter motors
-    private DcMotor shooterLeft = null;
-    private DcMotor shooterRight = null;
+    // Declare shooter motors (using DcMotorEx for velocity control)
+    private DcMotorEx shooterLeft = null;
+    private DcMotorEx shooterRight = null;
+
+    // Voltage sensor for battery compensation
+    private VoltageSensor voltageSensor = null;
     
     // Declare intake motors
     private DcMotor intakeFront = null;
     private DcMotor intakeBack = null;
+    
+    // Declare trap door servo
+    private Servo trapDoor = null;
     
     // Declare IMU
     private IMU imu = null;
     
     private ElapsedTime runtime = new ElapsedTime();
     
-    // Speed multipliers for drive
-    private static final double SLOW_MODE_MULTIPLIER = 0.5;
-    private static final double NORMAL_MODE_MULTIPLIER = 0.75;
+    // Speed multiplier for drive
+    private static final double DRIVE_SPEED = 0.63;  // 63% drive speed
     
-    // Shooter speed - configurable via FTC Dashboard
-    public static double SHOOTER_POWER = 0.6;  // 60% power (adjust in FTC Dashboard)
+    // Shooter velocities for different zones - configurable via FTC Dashboard
+    // Using velocity (ticks/sec) instead of power for consistent speed regardless of battery voltage
+    // REV HD Hex motor: max ~2800 ticks/sec at full speed
+    public static double SHOOTER_VELOCITY_FRONT = 1680.0;  // Front shooting zone - ~60% of max velocity
+    public static double SHOOTER_VELOCITY_BACK = 1940.0;   // Back shooting zone - ~69% of max velocity
+    public static int SHOOTER_SPINUP_MS = 500;             // Time to wait for shooter to reach speed (milliseconds)
+
+    // Legacy power values for reference/fallback
+    public static double SHOOTER_POWER_FRONT = 0.63;  // Front shooting zone - 63% power
+    public static double SHOOTER_POWER_BACK = 0.73;   // Back shooting zone - 73% power
     
     // Intake speed - configurable via FTC Dashboard
     public static double INTAKE_POWER = 1.0;  // Default to full speed (adjust in FTC Dashboard)
+    public static double BACK_INTAKE_SLOW_REVERSE = 0.2;  // Slow reverse speed (20%) for back intake when RT pressed
+
+    // Trap door servo positions - configurable via FTC Dashboard
+    // Servo range is 0.0 to 1.0 (300° goBILDA servo: 0.1 change ≈ 30°)
+    public static double TRAP_DOOR_CLOSED = 1.0;  // Closed position
+    public static double TRAP_DOOR_OPEN = 0.85;    // Open position (~30° from closed) - decrease for more opening
+    
+    // Track selected shooter zone (LB = FRONT, LT = BACK)
+    private double selectedShooterVelocity = SHOOTER_VELOCITY_FRONT;  // Default to front zone
+    private String selectedZone = "FRONT";
+    private ElapsedTime shooterSpinupTimer = new ElapsedTime();
+    
 
     @Override
     public void runOpMode() {
-        
+        // Send telemetry to both Driver Station and FTC Dashboard
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
         // Initialize the hardware variables
         telemetry.addData("Status", "Initializing...");
         telemetry.update();
@@ -97,20 +136,24 @@ public class Penguinauts_FieldRelativeDrive extends LinearOpMode {
         backLeftDrive = hardwareMap.get(DcMotor.class, "BL");
         backRightDrive = hardwareMap.get(DcMotor.class, "BR");
 
+        // Initialize voltage sensor for battery compensation
+        voltageSensor = hardwareMap.voltageSensor.iterator().next();
+
         // Initialize shooter motors independently for fault tolerance
+        // Using DcMotorEx for velocity control - maintains consistent speed regardless of battery/load
         try {
-            shooterLeft = hardwareMap.get(DcMotor.class, "SL");
-            telemetry.addData("Shooter Left", "✓ Found");
+            shooterLeft = hardwareMap.get(DcMotorEx.class, "SL");
+            telemetry.addData("Shooter Left", "OK Found");
         } catch (IllegalArgumentException e) {
-            telemetry.addData("Shooter Left", "✗ Not found");
+            telemetry.addData("Shooter Left", "X Not found");
             shooterLeft = null;
         }
-        
+
         try {
-            shooterRight = hardwareMap.get(DcMotor.class, "SR");
-            telemetry.addData("Shooter Right", "✓ Found");
+            shooterRight = hardwareMap.get(DcMotorEx.class, "SR");
+            telemetry.addData("Shooter Right", "OK Found");
         } catch (IllegalArgumentException e) {
-            telemetry.addData("Shooter Right", "✗ Not found");
+            telemetry.addData("Shooter Right", "X Not found");
             shooterRight = null;
         }
         
@@ -148,6 +191,16 @@ public class Penguinauts_FieldRelativeDrive extends LinearOpMode {
         } else {
             telemetry.addData("Intake Status", "✗ No intake configured");
         }
+        
+        // Initialize trap door servo
+        try {
+            trapDoor = hardwareMap.get(Servo.class, "TD");
+            trapDoor.setPosition(TRAP_DOOR_CLOSED);  // Start in closed position
+            telemetry.addData("Trap Door", "✓ Found (Closed)");
+        } catch (IllegalArgumentException e) {
+            telemetry.addData("Trap Door", "✗ Not found");
+            trapDoor = null;
+        }
         telemetry.update();
 
         // Set drive motor directions
@@ -157,16 +210,19 @@ public class Penguinauts_FieldRelativeDrive extends LinearOpMode {
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
 
         // Set shooter motor directions independently
+        // Using RUN_USING_ENCODER for velocity control - fixes velocity drop and battery issues
         if (shooterLeft != null) {
             shooterLeft.setDirection(DcMotor.Direction.REVERSE);  // REVERSED
             shooterLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-            shooterLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            shooterLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            shooterLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
-        
+
         if (shooterRight != null) {
             shooterRight.setDirection(DcMotor.Direction.FORWARD);  // REVERSED
             shooterRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-            shooterRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            shooterRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            shooterRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
         
         // Set intake motor directions
@@ -216,16 +272,15 @@ public class Penguinauts_FieldRelativeDrive extends LinearOpMode {
         telemetry.addData("", "");
         telemetry.addData("DRIVE Controls", "Left stick: Drive (field-relative)");
         telemetry.addData("", "Right stick: Rotate");
-        telemetry.addData("", "A: Reset field orientation");
-        telemetry.addData("", "L Bumper: Robot-relative mode");
-        telemetry.addData("", "R Bumper: Slow mode");
+        telemetry.addData("", "A: Reset field orientation (when not shooting)");
         
         // Show shooter controls if at least one motor is available
         if (shooterLeft != null || shooterRight != null) {
             telemetry.addData("", "");
-            telemetry.addData("SHOOTER Controls", "Right Trigger: Start Shooter");
-            telemetry.addData("", "B Button: Stop Shooter");
-            telemetry.addData("Shooter Speed", "%.0f%% (adjust in Dashboard)", SHOOTER_POWER * 100);
+            telemetry.addData("SHOOTER Controls", "");
+            telemetry.addData("Left Bumper", "FRONT zone %.0f%% (close)", SHOOTER_POWER_FRONT * 100);
+            telemetry.addData("Left Trigger", "BACK zone %.0f%% (far)", SHOOTER_POWER_BACK * 100);
+            telemetry.addData("B Button", "Stop shooter");
             
             // Show which motors are available
             if (shooterLeft != null && shooterRight != null) {
@@ -237,21 +292,23 @@ public class Penguinauts_FieldRelativeDrive extends LinearOpMode {
             }
         }
         
-        // Show intake controls if at least one motor is available
-        if (intakeFront != null || intakeBack != null) {
+        // Show front intake controls if motor is available
+        if (intakeFront != null) {
             telemetry.addData("", "");
-            telemetry.addData("INTAKE Controls", "Left Trigger: Collect (hold)");
-            telemetry.addData("", "Y Button: Eject (hold)");
+            telemetry.addData("FRONT INTAKE", "(Front + Middle rollers)");
+            telemetry.addData("Controls", "RT: Collect | Y: Eject");
+        }
+        
+        // Show back intake + trap door controls
+        if (intakeBack != null || trapDoor != null) {
+            telemetry.addData("", "");
+            telemetry.addData("BACK INTAKE + TRAP DOOR", "");
+            telemetry.addData("RB", "Open trap door + Outtake ball");
+            telemetry.addData("A", "Pull back (trap door closed)");
+        }
+        
+        if (intakeFront != null || intakeBack != null) {
             telemetry.addData("Intake Speed", "%.0f%% (adjust in Dashboard)", INTAKE_POWER * 100);
-            
-            // Show which motors are available
-            if (intakeFront != null && intakeBack != null) {
-                telemetry.addData("Intake Mode", "✓ FRONT & BACK");
-            } else if (intakeFront != null) {
-                telemetry.addData("Intake Mode", "⚠ FRONT ONLY");
-            } else {
-                telemetry.addData("Intake Mode", "⚠ BACK ONLY");
-            }
         }
         
         telemetry.addData("", "");
@@ -274,133 +331,191 @@ public class Penguinauts_FieldRelativeDrive extends LinearOpMode {
             double lateral = gamepad1.left_stick_x;   // Strafe left/right
             double yaw = gamepad1.right_stick_x;      // Rotate left/right
 
-            // Reset field orientation with A button (if not using B for shooter stop)
-            // Note: A button resets orientation, B button stops shooter
-            if (gamepad1.a && gamepad1.right_trigger < 0.1) {
-                // Only reset if not actively shooting
+            // Reset field orientation with A button (only if back intake not being used)
+            // Note: A button also controls back intake reverse
+            if (gamepad1.a && intakeBack == null) {
+                // Only reset IMU if back intake is not configured (A is used for back intake)
                 imu.resetYaw();
             }
 
-            // Determine drive mode and speed
-            boolean robotRelative = gamepad1.left_bumper;
-            double speedMultiplier = gamepad1.right_bumper ? SLOW_MODE_MULTIPLIER : NORMAL_MODE_MULTIPLIER;
-            String driveMode = robotRelative ? "Robot-Relative" : "Field-Relative";
-            driveMode += gamepad1.right_bumper ? " (Slow 50%)" : " (Normal 75%)";
+            // Fixed drive speed
+            double speedMultiplier = DRIVE_SPEED;
+            String driveMode = "Field-Relative (63%)";
 
-            // Choose drive mode
-            if (robotRelative) {
-                // Robot-relative drive (like RC car)
-                driveRobotRelative(axial, lateral, yaw, speedMultiplier);
-            } else {
-                // Field-relative drive
-                driveFieldRelative(axial, lateral, yaw, speedMultiplier);
-            }
+            // Field-relative drive
+            driveFieldRelative(axial, lateral, yaw, speedMultiplier);
 
             // ========== SHOOTER CONTROLS ==========
             
-            String shooterStatus = "Not configured";
+            String shooterStatus = "STOPPED";
             String shooterMode = "N/A";
-            double currentShooterPower = 0.0;
-            
+            String shootingZone = "NONE";
+            double currentShooterVelocity = 0.0;
+
             // Operate shooter if at least ONE motor is available
             if (shooterLeft != null || shooterRight != null) {
-                // Right Trigger: Start shooter motors
-                if (gamepad1.right_trigger > 0.1) {
-                    if (shooterLeft != null) {
-                        shooterLeft.setPower(SHOOTER_POWER);
-                    }
-                    if (shooterRight != null) {
-                        shooterRight.setPower(SHOOTER_POWER);
-                    }
-                    shooterStatus = "🔥 SHOOTING";
-                    currentShooterPower = SHOOTER_POWER;
+                // Left Trigger: SELECT BACK zone and START shooter - far shots
+                if (gamepad1.left_trigger > 0.1) {
+                    selectedShooterVelocity = SHOOTER_VELOCITY_BACK;
+                    selectedZone = "BACK";
+                    // Start shooter at selected velocity
+                    if (shooterLeft != null) shooterLeft.setVelocity(SHOOTER_VELOCITY_BACK);
+                    if (shooterRight != null) shooterRight.setVelocity(SHOOTER_VELOCITY_BACK);
                 }
+                // Left Bumper: SELECT FRONT zone and START shooter - close shots
+                else if (gamepad1.left_bumper) {
+                    selectedShooterVelocity = SHOOTER_VELOCITY_FRONT;
+                    selectedZone = "FRONT";
+                    // Start shooter at selected velocity
+                    if (shooterLeft != null) shooterLeft.setVelocity(SHOOTER_VELOCITY_FRONT);
+                    if (shooterRight != null) shooterRight.setVelocity(SHOOTER_VELOCITY_FRONT);
+                }
+
                 // B Button: Stop shooter motors
-                else if (gamepad1.b) {
+                if (gamepad1.b) {
                     if (shooterLeft != null) {
-                        shooterLeft.setPower(0);
+                        shooterLeft.setVelocity(0);
                     }
                     if (shooterRight != null) {
-                        shooterRight.setPower(0);
+                        shooterRight.setVelocity(0);
                     }
                     shooterStatus = "STOPPED";
-                    currentShooterPower = 0.0;
+                    currentShooterVelocity = 0.0;
                 }
-                // Maintain current state
-                else {
-                    // Check power from whichever motor is available
-                    if (shooterLeft != null) {
-                        currentShooterPower = shooterLeft.getPower();
-                    } else if (shooterRight != null) {
-                        currentShooterPower = shooterRight.getPower();
-                    }
-                    
-                    if (currentShooterPower > 0.01) {
-                        shooterStatus = "RUNNING";
+
+                // Get current shooter velocity (actual measured velocity)
+                if (shooterLeft != null) {
+                    currentShooterVelocity = shooterLeft.getVelocity();
+                } else if (shooterRight != null) {
+                    currentShooterVelocity = shooterRight.getVelocity();
+                }
+
+                // Update status display
+                if (currentShooterVelocity > 100) {
+                    shooterStatus = "SPINNING";
+                    if (Math.abs(currentShooterVelocity - SHOOTER_VELOCITY_BACK) < 200) {
+                        shootingZone = "BACK (" + String.format("%.0f", SHOOTER_VELOCITY_BACK) + ")";
                     } else {
-                        shooterStatus = "STOPPED";
+                        shootingZone = "FRONT (" + String.format("%.0f", SHOOTER_VELOCITY_FRONT) + ")";
                     }
+                } else {
+                    shooterStatus = "STOPPED";
+                    shootingZone = selectedZone + " (selected)";
                 }
-                
+
                 // Determine shooter mode
                 if (shooterLeft != null && shooterRight != null) {
-                    shooterMode = "DUAL (Full Power)";
+                    shooterMode = "DUAL (Velocity PID)";
                 } else if (shooterLeft != null) {
-                    shooterMode = "LEFT ONLY ⚠";
+                    shooterMode = "LEFT ONLY";
                 } else {
-                    shooterMode = "RIGHT ONLY ⚠";
+                    shooterMode = "RIGHT ONLY";
                 }
             }
             
-            // ========== INTAKE CONTROLS ==========
+            // ========== FRONT INTAKE CONTROLS (Front + Middle rollers) ==========
             
-            String intakeStatus = "STOPPED";
-            String intakeMode = "N/A";
-            double currentIntakePower = 0.0;
+            String frontIntakeStatus = "STOPPED";
+            double frontIntakePower = 0.0;
             
-            // Operate intake if at least ONE motor is available
-            if (intakeFront != null || intakeBack != null) {
-                // Left Trigger: Run intake FORWARD (collect) - only while held
-                if (gamepad1.left_trigger > 0.1) {
-                    if (intakeFront != null) {
-                        intakeFront.setPower(INTAKE_POWER);
-                    }
+            // Operate front intake independently
+            if (intakeFront != null) {
+                // Right Trigger: Run front intake FORWARD (collect) - only while held
+                if (gamepad1.right_trigger > 0.1) {
+                    intakeFront.setPower(INTAKE_POWER);
+                    frontIntakeStatus = "COLLECTING";
+                    frontIntakePower = INTAKE_POWER;
+                }
+                // Y Button: Run front intake REVERSE (eject) - only while held
+                else if (gamepad1.y) {
+                    intakeFront.setPower(-INTAKE_POWER);
+                    frontIntakeStatus = "EJECTING";
+                    frontIntakePower = -INTAKE_POWER;
+                }
+                // No button pressed: Stop front intake automatically
+                else {
+                    intakeFront.setPower(0);
+                    frontIntakeStatus = "STOPPED";
+                    frontIntakePower = 0.0;
+                }
+            }
+            
+            // ========== BACK INTAKE + TRAP DOOR CONTROLS ==========
+            
+            String backIntakeStatus = "STOPPED";
+            double backIntakePower = 0.0;
+            String trapDoorStatus = "CLOSED";
+            
+            // Right Bumper: Open trap door + start shooter immediately, wait 500ms, then run back intake
+            if (gamepad1.right_bumper) {
+                // Check if shooter is already running at speed (using velocity threshold)
+                boolean shooterAlreadyRunning = currentShooterVelocity >= (selectedShooterVelocity * 0.9);
+
+                // Always open trap door and run shooter
+                if (trapDoor != null) {
+                    trapDoor.setPosition(TRAP_DOOR_OPEN);
+                    trapDoorStatus = "OPEN";
+                }
+                if (shooterLeft != null) shooterLeft.setVelocity(selectedShooterVelocity);
+                if (shooterRight != null) shooterRight.setVelocity(selectedShooterVelocity);
+                
+                if (shooterAlreadyRunning) {
+                    // Shooter already at speed - run back intake immediately!
                     if (intakeBack != null) {
                         intakeBack.setPower(INTAKE_POWER);
+                        backIntakeStatus = "SHOOTING!";
+                        backIntakePower = INTAKE_POWER;
                     }
-                    intakeStatus = "COLLECTING";
-                    currentIntakePower = INTAKE_POWER;
-                }
-                // Y Button: Run intake REVERSE (eject) - only while held
-                else if (gamepad1.y) {
-                    if (intakeFront != null) {
-                        intakeFront.setPower(-INTAKE_POWER);
-                    }
+                } else if (shooterSpinupTimer.milliseconds() >= SHOOTER_SPINUP_MS) {
+                    // Spin-up complete - now run back intake to push ball
                     if (intakeBack != null) {
-                        intakeBack.setPower(-INTAKE_POWER);
+                        intakeBack.setPower(INTAKE_POWER);
+                        backIntakeStatus = "SHOOTING!";
+                        backIntakePower = INTAKE_POWER;
                     }
-                    intakeStatus = "EJECTING";
-                    currentIntakePower = -INTAKE_POWER;
-                }
-                // No button pressed: Stop intake automatically
-                else {
-                    if (intakeFront != null) {
-                        intakeFront.setPower(0);
-                    }
-                    if (intakeBack != null) {
-                        intakeBack.setPower(0);
-                    }
-                    intakeStatus = "STOPPED";
-                    currentIntakePower = 0.0;
-                }
-                
-                // Determine intake mode
-                if (intakeFront != null && intakeBack != null) {
-                    intakeMode = "FRONT & BACK";
-                } else if (intakeFront != null) {
-                    intakeMode = "FRONT ONLY ⚠";
+                } else if (shooterSpinupTimer.milliseconds() > 0) {
+                    // Still spinning up - don't push ball yet
+                    int remaining = SHOOTER_SPINUP_MS - (int)shooterSpinupTimer.milliseconds();
+                    backIntakeStatus = "SPIN UP: " + remaining + "ms";
                 } else {
-                    intakeMode = "BACK ONLY ⚠";
+                    // First press - start timer
+                    shooterSpinupTimer.reset();
+                    backIntakeStatus = "SPINNING UP...";
+                }
+            }
+            // A Button: Run back intake REVERSE (pull back) - trap door stays closed
+            else if (gamepad1.a && intakeBack != null) {
+                intakeBack.setPower(-INTAKE_POWER);
+                backIntakeStatus = "PULLING BACK";
+                backIntakePower = -INTAKE_POWER;
+                // Keep trap door closed
+                if (trapDoor != null) {
+                    trapDoor.setPosition(TRAP_DOOR_CLOSED);
+                    trapDoorStatus = "CLOSED";
+                }
+            }
+            // RT pressed (without RB): Run back intake REVERSE at slow speed - holds ball back
+            else if (gamepad1.right_trigger > 0.1 && intakeBack != null) {
+                intakeBack.setPower(-BACK_INTAKE_SLOW_REVERSE);
+                backIntakeStatus = "SLOW REVERSE";
+                backIntakePower = -BACK_INTAKE_SLOW_REVERSE;
+                // Keep trap door closed
+                if (trapDoor != null) {
+                    trapDoor.setPosition(TRAP_DOOR_CLOSED);
+                    trapDoorStatus = "CLOSED";
+                }
+            }
+            // No button pressed: Stop back intake and close trap door
+            else {
+                if (intakeBack != null) {
+                    intakeBack.setPower(0);
+                    backIntakeStatus = "STOPPED";
+                    backIntakePower = 0.0;
+                }
+                // Close trap door
+                if (trapDoor != null) {
+                    trapDoor.setPosition(TRAP_DOOR_CLOSED);
+                    trapDoorStatus = "CLOSED";
                 }
             }
 
@@ -420,45 +535,41 @@ public class Penguinauts_FieldRelativeDrive extends LinearOpMode {
             if (shooterLeft != null || shooterRight != null) {
                 telemetry.addData("", "");
                 telemetry.addData("=== SHOOTER ===", "");
-                telemetry.addData("Mode", shooterMode);
                 telemetry.addData("Status", shooterStatus);
-                telemetry.addData("Power", "%.0f%% (%.2f)", currentShooterPower * 100, currentShooterPower);
-                telemetry.addData("Config Speed", "%.0f%% (Dashboard)", SHOOTER_POWER * 100);
+                telemetry.addData("Zone", shootingZone);
+                telemetry.addData("Velocity", "%.0f ticks/sec (target: %.0f)", currentShooterVelocity, selectedShooterVelocity);
+                telemetry.addData("Battery", "%.2fV", voltageSensor.getVoltage());
+                telemetry.addData("Motor Mode", shooterMode);
                 telemetry.addData("", "");
-                telemetry.addData("Controls", "RT=Start | B=Stop | A=Reset IMU");
-                
-                // Show which motors are actually running
-                if (shooterLeft != null && shooterRight != null) {
-                    double leftPwr = shooterLeft.getPower();
-                    double rightPwr = shooterRight.getPower();
-                    telemetry.addData("Motor Status", "L:%.0f%% R:%.0f%%", leftPwr*100, rightPwr*100);
-                } else if (shooterLeft != null) {
-                    telemetry.addData("Motor Status", "LEFT: %.0f%% | RIGHT: ✗ FAILED", shooterLeft.getPower()*100);
-                } else {
-                    telemetry.addData("Motor Status", "LEFT: ✗ FAILED | RIGHT: %.0f%%", shooterRight.getPower()*100);
-                }
+                telemetry.addData("Controls", "LB=Front | LT=Back | B=Stop");
             }
             
+            // Display Front Intake telemetry
+            if (intakeFront != null) {
+                telemetry.addData("", "");
+                telemetry.addData("=== FRONT INTAKE ===", "(Front + Middle)");
+                telemetry.addData("Status", frontIntakeStatus);
+                telemetry.addData("Power", "%.0f%%", frontIntakePower * 100);
+                telemetry.addData("Controls", "RT=Collect | Y=Eject");
+            }
+            
+            // Display Back Intake + Trap Door telemetry
+            if (intakeBack != null || trapDoor != null) {
+                telemetry.addData("", "");
+                telemetry.addData("=== BACK INTAKE + TRAP DOOR ===", "");
+                if (intakeBack != null) {
+                    telemetry.addData("Back Intake", "%s (%.0f%%)", backIntakeStatus, backIntakePower * 100);
+                }
+                if (trapDoor != null) {
+                    telemetry.addData("Trap Door", trapDoorStatus);
+                }
+                telemetry.addData("Controls", "RB=Open+Outtake | A=Pull Back");
+            }
+            
+            // Show intake speed config if any intake is available
             if (intakeFront != null || intakeBack != null) {
                 telemetry.addData("", "");
-                telemetry.addData("=== INTAKE ===", "");
-                telemetry.addData("Mode", intakeMode);
-                telemetry.addData("Status", intakeStatus);
-                telemetry.addData("Power", "%.0f%% (%.2f)", currentIntakePower * 100, currentIntakePower);
-                telemetry.addData("Config Speed", "%.0f%% (Dashboard)", INTAKE_POWER * 100);
-                telemetry.addData("", "");
-                telemetry.addData("Controls", "LT=Collect | Y=Eject");
-                
-                // Show which motors are actually running
-                if (intakeFront != null && intakeBack != null) {
-                    double frontPwr = intakeFront.getPower();
-                    double backPwr = intakeBack.getPower();
-                    telemetry.addData("Motor Status", "Front:%.0f%% Back:%.0f%%", frontPwr*100, backPwr*100);
-                } else if (intakeFront != null) {
-                    telemetry.addData("Motor Status", "FRONT: %.0f%% | BACK: ✗ FAILED", intakeFront.getPower()*100);
-                } else {
-                    telemetry.addData("Motor Status", "FRONT: ✗ FAILED | BACK: %.0f%%", intakeBack.getPower()*100);
-                }
+                telemetry.addData("Intake Config Speed", "%.0f%% (Dashboard)", INTAKE_POWER * 100);
             }
             
             telemetry.update();
