@@ -80,13 +80,13 @@ public class Penguinauts_MecanumDrive extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     
     // Speed multiplier for drive
-    private static final double DRIVE_SPEED = 0.63;  // 63% drive speed
+    private static final double DRIVE_SPEED = 1;  // 63% drive speed
     
     // Shooter velocities for different zones - configurable via FTC Dashboard
     // Using velocity (ticks/sec) instead of power for consistent speed regardless of battery voltage
     // REV HD Hex motor: max ~2800 ticks/sec at full speed
-    public static double SHOOTER_VELOCITY_FRONT = 1680.0;  // Front shooting zone - ~60% of max velocity
-    public static double SHOOTER_VELOCITY_BACK = 1940.0;   // Back shooting zone - ~69% of max velocity
+    public static double SHOOTER_VELOCITY_FRONT = 1200.0;  // Front shooting zone - ~60% of max velocity
+    public static double SHOOTER_VELOCITY_BACK = 1550.0;   // Back shooting zone - ~69% of max velocity
     public static int SHOOTER_SPINUP_MS = 500;             // Time to wait for shooter to reach speed (milliseconds)
 
     // Legacy power values for reference/fallback
