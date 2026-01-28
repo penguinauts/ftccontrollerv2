@@ -83,14 +83,16 @@ public class Penguinauts_FieldRelativeDrive extends LinearOpMode {
     // Declare intake motors
     private DcMotor intakeFront = null;
     private DcMotor intakeBack = null;
-    
+
     // Declare trap door servo
     private Servo trapDoor = null;
-    public static double P = 8;
 
-    public static double I = 0;
-    public static double D = 0;
-    public static double F = 12.7;
+    // PIDF coefficients for shooter velocity control - configurable via FTC Dashboard
+    public static double P = 10.0;
+    public static double I = 0.0;
+    public static double D = 0.0;
+    public static double F = 13.5;
+
     // Declare IMU
     private IMU imu = null;
     
@@ -104,7 +106,6 @@ public class Penguinauts_FieldRelativeDrive extends LinearOpMode {
     // REV HD Hex motor: max ~2800 ticks/sec at full speed
     public static double SHOOTER_VELOCITY_FRONT = 1200.0;  // Front shooting zone - ~60% of max velocity
     public static double SHOOTER_VELOCITY_BACK = 1550.0;   // Back shooting zone - ~69% of max velocity
-    public static int SHOOTER_SPINUP_MS = 500;             // Time to wait for shooter to reach speed (milliseconds)
 
     // Legacy power values for reference/fallback
     public static double SHOOTER_POWER_FRONT = 0.63;  // Front shooting zone - 63% power
@@ -115,14 +116,15 @@ public class Penguinauts_FieldRelativeDrive extends LinearOpMode {
     public static double BACK_INTAKE_SLOW_REVERSE = 0.2;  // Slow reverse speed (20%) for back intake when RT pressed
 
     // Trap door servo positions - configurable via FTC Dashboard
-    // Servo range is 0.0 to 1.0 (300° goBILDA servo: 0.1 change ≈ 30°)
     public static double TRAP_DOOR_CLOSED = 1.0;  // Closed position
-    public static double TRAP_DOOR_OPEN = 0.85;    // Open position (~30° from closed) - decrease for more opening
-    
+    public static double TRAP_DOOR_OPEN = 0.85;   // Open position
+
     // Track selected shooter zone (LB = FRONT, LT = BACK)
     private double selectedShooterVelocity = SHOOTER_VELOCITY_FRONT;  // Default to front zone
     private String selectedZone = "FRONT";
-    private ElapsedTime shooterSpinupTimer = new ElapsedTime();
+
+    // Trap door state (default open)
+    private boolean trapDoorOpen = true;
     
 
     @Override
@@ -195,16 +197,17 @@ public class Penguinauts_FieldRelativeDrive extends LinearOpMode {
         } else {
             telemetry.addData("Intake Status", "✗ No intake configured");
         }
-        
+
         // Initialize trap door servo
         try {
             trapDoor = hardwareMap.get(Servo.class, "TD");
-            trapDoor.setPosition(TRAP_DOOR_CLOSED);  // Start in closed position
-            telemetry.addData("Trap Door", "✓ Found (Closed)");
+            trapDoor.setPosition(TRAP_DOOR_OPEN);  // Start in OPEN position
+            telemetry.addData("Trap Door", "✓ Found (Open)");
         } catch (IllegalArgumentException e) {
             telemetry.addData("Trap Door", "✗ Not found");
             trapDoor = null;
         }
+
         telemetry.update();
 
         // Set drive motor directions
@@ -216,23 +219,19 @@ public class Penguinauts_FieldRelativeDrive extends LinearOpMode {
         // Set shooter motor directions independently
         // Using RUN_USING_ENCODER for velocity control - fixes velocity drop and battery issues
         if (shooterLeft != null) {
-            shooterLeft.setDirection(DcMotor.Direction.REVERSE);  // REVERSED
+            shooterLeft.setDirection(DcMotor.Direction.REVERSE);
             shooterLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
             shooterLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            shooterRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             shooterLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            shooterRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-            shooterLeft.setVelocityPIDFCoefficients(10.0, 0.0, 0.0, 13.5);
-            shooterRight.setVelocityPIDFCoefficients(10.0, 0.0, 0.0, 13.5);
-
+            shooterLeft.setVelocityPIDFCoefficients(P, I, D, F);
         }
 
         if (shooterRight != null) {
-            shooterRight.setDirection(DcMotor.Direction.FORWARD);  // REVERSED
+            shooterRight.setDirection(DcMotor.Direction.FORWARD);
             shooterRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
             shooterRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             shooterRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            shooterRight.setVelocityPIDFCoefficients(P, I, D, F);
         }
         
         // Set intake motor directions
@@ -309,12 +308,12 @@ public class Penguinauts_FieldRelativeDrive extends LinearOpMode {
             telemetry.addData("Controls", "RT: Collect | Y: Eject");
         }
         
-        // Show back intake + trap door controls
-        if (intakeBack != null || trapDoor != null) {
+        // Show back intake controls
+        if (intakeBack != null) {
             telemetry.addData("", "");
-            telemetry.addData("BACK INTAKE + TRAP DOOR", "");
-            telemetry.addData("RB", "Open trap door + Outtake ball");
-            telemetry.addData("A", "Pull back (trap door closed)");
+            telemetry.addData("BACK INTAKE", "");
+            telemetry.addData("RB", "Outtake ball");
+            telemetry.addData("A", "Pull back");
         }
         
         if (intakeFront != null || intakeBack != null) {
@@ -356,7 +355,11 @@ public class Penguinauts_FieldRelativeDrive extends LinearOpMode {
             driveFieldRelative(axial, lateral, yaw, speedMultiplier);
 
             // ========== SHOOTER CONTROLS ==========
-            
+
+            // Update PIDF coefficients from Dashboard (allows live tuning)
+            if (shooterLeft != null) shooterLeft.setVelocityPIDFCoefficients(P, I, D, F);
+            if (shooterRight != null) shooterRight.setVelocityPIDFCoefficients(P, I, D, F);
+
             String shooterStatus = "STOPPED";
             String shooterMode = "N/A";
             String shootingZone = "NONE";
@@ -450,82 +453,58 @@ public class Penguinauts_FieldRelativeDrive extends LinearOpMode {
                 }
             }
             
-            // ========== BACK INTAKE + TRAP DOOR CONTROLS ==========
-            
+            // ========== BACK INTAKE CONTROLS ==========
+
             String backIntakeStatus = "STOPPED";
             double backIntakePower = 0.0;
-            String trapDoorStatus = "CLOSED";
-            
-            // Right Bumper: Open trap door + start shooter immediately, wait 500ms, then run back intake
-            if (gamepad1.right_bumper) {
-                // Check if shooter is already running at speed (using velocity threshold)
-                boolean shooterAlreadyRunning = currentShooterVelocity >= (selectedShooterVelocity * 0.9);
 
-                // Always open trap door and run shooter
-                if (trapDoor != null) {
-                    trapDoor.setPosition(TRAP_DOOR_OPEN);
-                    trapDoorStatus = "OPEN";
-                }
+            // Right Bumper: Start shooter + run back intake immediately
+            if (gamepad1.right_bumper) {
+                // Start shooter
                 if (shooterLeft != null) shooterLeft.setVelocity(selectedShooterVelocity);
                 if (shooterRight != null) shooterRight.setVelocity(selectedShooterVelocity);
-                
-                if (shooterAlreadyRunning) {
-                    // Shooter already at speed - run back intake immediately!
-                    if (intakeBack != null) {
-                        intakeBack.setPower(INTAKE_POWER);
-                        backIntakeStatus = "SHOOTING!";
-                        backIntakePower = INTAKE_POWER;
-                    }
-                } else if (shooterSpinupTimer.milliseconds() >= SHOOTER_SPINUP_MS) {
-                    // Spin-up complete - now run back intake to push ball
-                    if (intakeBack != null) {
-                        intakeBack.setPower(INTAKE_POWER);
-                        backIntakeStatus = "SHOOTING!";
-                        backIntakePower = INTAKE_POWER;
-                    }
-                } else if (shooterSpinupTimer.milliseconds() > 0) {
-                    // Still spinning up - don't push ball yet
-                    int remaining = SHOOTER_SPINUP_MS - (int)shooterSpinupTimer.milliseconds();
-                    backIntakeStatus = "SPIN UP: " + remaining + "ms";
-                } else {
-                    // First press - start timer
-                    shooterSpinupTimer.reset();
-                    backIntakeStatus = "SPINNING UP...";
+                // Run back intake immediately
+                if (intakeBack != null) {
+                    intakeBack.setPower(INTAKE_POWER);
+                    backIntakeStatus = "SHOOTING!";
+                    backIntakePower = INTAKE_POWER;
                 }
             }
-            // A Button: Run back intake REVERSE (pull back) - trap door stays closed
+            // A Button: Run back intake REVERSE (pull back)
             else if (gamepad1.a && intakeBack != null) {
                 intakeBack.setPower(-INTAKE_POWER);
                 backIntakeStatus = "PULLING BACK";
                 backIntakePower = -INTAKE_POWER;
-                // Keep trap door closed
-                if (trapDoor != null) {
-                    trapDoor.setPosition(TRAP_DOOR_CLOSED);
-                    trapDoorStatus = "CLOSED";
-                }
             }
             // RT pressed (without RB): Run back intake REVERSE at slow speed - holds ball back
             else if (gamepad1.right_trigger > 0.1 && intakeBack != null) {
                 intakeBack.setPower(-BACK_INTAKE_SLOW_REVERSE);
                 backIntakeStatus = "SLOW REVERSE";
                 backIntakePower = -BACK_INTAKE_SLOW_REVERSE;
-                // Keep trap door closed
-                if (trapDoor != null) {
-                    trapDoor.setPosition(TRAP_DOOR_CLOSED);
-                    trapDoorStatus = "CLOSED";
-                }
             }
-            // No button pressed: Stop back intake and close trap door
+            // No button pressed: Stop back intake
             else {
                 if (intakeBack != null) {
                     intakeBack.setPower(0);
                     backIntakeStatus = "STOPPED";
                     backIntakePower = 0.0;
                 }
-                // Close trap door
-                if (trapDoor != null) {
+            }
+
+            // ========== TRAP DOOR CONTROLS ==========
+            // X = Close, Start = Open (default open)
+            String trapDoorStatus = "N/A";
+            if (trapDoor != null) {
+                if (gamepad1.x) {
                     trapDoor.setPosition(TRAP_DOOR_CLOSED);
+                    trapDoorOpen = false;
                     trapDoorStatus = "CLOSED";
+                } else if (gamepad1.start) {
+                    trapDoor.setPosition(TRAP_DOOR_OPEN);
+                    trapDoorOpen = true;
+                    trapDoorStatus = "OPEN";
+                } else {
+                    trapDoorStatus = trapDoorOpen ? "OPEN" : "CLOSED";
                 }
             }
 
@@ -548,7 +527,9 @@ public class Penguinauts_FieldRelativeDrive extends LinearOpMode {
                 telemetry.addData("Status", shooterStatus);
                 telemetry.addData("Zone", shootingZone);
                 telemetry.addData("Velocity", "%.0f ticks/sec (target: %.0f)", currentShooterVelocity, selectedShooterVelocity);
+                telemetry.addData("Velocity Error", "%.0f ticks/sec", selectedShooterVelocity - currentShooterVelocity);
                 telemetry.addData("Battery", "%.2fV", voltageSensor.getVoltage());
+                telemetry.addData("PIDF", "P=%.1f I=%.1f D=%.1f F=%.1f", P, I, D, F);
                 telemetry.addData("Motor Mode", shooterMode);
                 telemetry.addData("", "");
                 telemetry.addData("Controls", "LB=Front | LT=Back | B=Stop");
@@ -563,19 +544,22 @@ public class Penguinauts_FieldRelativeDrive extends LinearOpMode {
                 telemetry.addData("Controls", "RT=Collect | Y=Eject");
             }
             
-            // Display Back Intake + Trap Door telemetry
-            if (intakeBack != null || trapDoor != null) {
+            // Display Back Intake telemetry
+            if (intakeBack != null) {
                 telemetry.addData("", "");
-                telemetry.addData("=== BACK INTAKE + TRAP DOOR ===", "");
-                if (intakeBack != null) {
-                    telemetry.addData("Back Intake", "%s (%.0f%%)", backIntakeStatus, backIntakePower * 100);
-                }
-                if (trapDoor != null) {
-                    telemetry.addData("Trap Door", trapDoorStatus);
-                }
-                telemetry.addData("Controls", "RB=Open+Outtake | A=Pull Back");
+                telemetry.addData("=== BACK INTAKE ===", "");
+                telemetry.addData("Back Intake", "%s (%.0f%%)", backIntakeStatus, backIntakePower * 100);
+                telemetry.addData("Controls", "RB=Outtake | A=Pull Back");
             }
-            
+
+            // Display Trap Door telemetry
+            if (trapDoor != null) {
+                telemetry.addData("", "");
+                telemetry.addData("=== TRAP DOOR ===", "");
+                telemetry.addData("Status", trapDoorStatus);
+                telemetry.addData("Controls", "X=Close | Start=Open");
+            }
+
             // Show intake speed config if any intake is available
             if (intakeFront != null || intakeBack != null) {
                 telemetry.addData("", "");
