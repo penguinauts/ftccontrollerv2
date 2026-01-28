@@ -86,7 +86,11 @@ public class Penguinauts_FieldRelativeDrive extends LinearOpMode {
     
     // Declare trap door servo
     private Servo trapDoor = null;
-    
+    public static double P = 8;
+
+    public static double I = 0;
+    public static double D = 0;
+    public static double F = 12.7;
     // Declare IMU
     private IMU imu = null;
     
@@ -215,7 +219,13 @@ public class Penguinauts_FieldRelativeDrive extends LinearOpMode {
             shooterLeft.setDirection(DcMotor.Direction.REVERSE);  // REVERSED
             shooterLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
             shooterLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            shooterRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             shooterLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            shooterRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+            shooterLeft.setVelocityPIDFCoefficients(10.0, 0.0, 0.0, 13.5);
+            shooterRight.setVelocityPIDFCoefficients(10.0, 0.0, 0.0, 13.5);
+
         }
 
         if (shooterRight != null) {

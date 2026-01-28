@@ -62,26 +62,31 @@ public class Penguinauts_MecanumDrive extends LinearOpMode {
     private DcMotor frontRightDrive = null;
     private DcMotor backLeftDrive = null;
     private DcMotor backRightDrive = null;
-    
+
     // Declare shooter motors (using DcMotorEx for velocity control)
     private DcMotorEx shooterLeft = null;
     private DcMotorEx shooterRight = null;
 
     // Voltage sensor for battery compensation
     private VoltageSensor voltageSensor = null;
-    
+
     // Declare intake motors
     private DcMotor intakeFront = null;
     private DcMotor intakeBack = null;
-    
+
     // Declare trap door servo
     private Servo trapDoor = null;
-    
+
     private ElapsedTime runtime = new ElapsedTime();
-    
+    public static double P = 8;
+
+    public static double I = 0;
+    public static double D = 0;
+    public static double F = 12.7;
+
     // Speed multiplier for drive
     private static final double DRIVE_SPEED = 1;  // 63% drive speed
-    
+
     // Shooter velocities for different zones - configurable via FTC Dashboard
     // Using velocity (ticks/sec) instead of power for consistent speed regardless of battery voltage
     // REV HD Hex motor: max ~2800 ticks/sec at full speed
@@ -92,21 +97,21 @@ public class Penguinauts_MecanumDrive extends LinearOpMode {
     // Legacy power values for reference/fallback
     public static double SHOOTER_POWER_FRONT = 0.63;  // Front shooting zone - 63% power
     public static double SHOOTER_POWER_BACK = 0.73;   // Back shooting zone - 73% power
-    
+
     // Intake speed - configurable via FTC Dashboard
     public static double INTAKE_POWER = 1.0;  // Default to full speed (adjust in FTC Dashboard)
     public static double BACK_INTAKE_SLOW_REVERSE = 0.2;  // Slow reverse speed (20%) for back intake when RT pressed
-    
+
     // Trap door servo positions - configurable via FTC Dashboard
     // Servo range is 0.0 to 1.0 (300° goBILDA servo: 0.1 change ≈ 30°)
     public static double TRAP_DOOR_CLOSED = 1.0;  // Closed position
     public static double TRAP_DOOR_OPEN = 0.85;    // Open position (~30° from closed) - decrease for more opening
-    
+
     // Track selected shooter zone (LB = FRONT, LT = BACK)
     private double selectedShooterVelocity = SHOOTER_VELOCITY_FRONT;  // Default to front zone
     private String selectedZone = "FRONT";
     private ElapsedTime shooterSpinupTimer = new ElapsedTime();
-    
+
 
     @Override
     public void runOpMode() {
@@ -116,7 +121,7 @@ public class Penguinauts_MecanumDrive extends LinearOpMode {
         // Initialize the hardware variables
         telemetry.addData("Status", "Initializing...");
         telemetry.update();
-        
+
         // Initialize drive motors
         frontLeftDrive = hardwareMap.get(DcMotor.class, "FL");
         frontRightDrive = hardwareMap.get(DcMotor.class, "FR");
@@ -143,7 +148,7 @@ public class Penguinauts_MecanumDrive extends LinearOpMode {
             telemetry.addData("Shooter Right", "X Not found");
             shooterRight = null;
         }
-        
+
         // Display shooter status
         if (shooterLeft != null && shooterRight != null) {
             telemetry.addData("Shooter Status", "✓ BOTH motors ready (full power)");
@@ -154,7 +159,7 @@ public class Penguinauts_MecanumDrive extends LinearOpMode {
             telemetry.addData("Shooter Status", "✗ No shooter configured");
             telemetry.addData("", "Drive system will work normally");
         }
-        
+
         // Initialize intake motors independently for fault tolerance
         try {
             intakeFront = hardwareMap.get(DcMotor.class, "IF");
@@ -163,7 +168,7 @@ public class Penguinauts_MecanumDrive extends LinearOpMode {
             telemetry.addData("Intake Front", "✗ Not found");
             intakeFront = null;
         }
-        
+
         try {
             intakeBack = hardwareMap.get(DcMotor.class, "IB");
             telemetry.addData("Intake Back", "✓ Found");
@@ -171,7 +176,7 @@ public class Penguinauts_MecanumDrive extends LinearOpMode {
             telemetry.addData("Intake Back", "✗ Not found");
             intakeBack = null;
         }
-        
+
         // Display intake status
         if (intakeFront != null && intakeBack != null) {
             telemetry.addData("Intake Status", "✓ BOTH motors ready");
@@ -180,7 +185,7 @@ public class Penguinauts_MecanumDrive extends LinearOpMode {
         } else {
             telemetry.addData("Intake Status", "✗ No intake configured");
         }
-        
+
         // Initialize trap door servo
         try {
             trapDoor = hardwareMap.get(Servo.class, "TD");
@@ -206,7 +211,13 @@ public class Penguinauts_MecanumDrive extends LinearOpMode {
             shooterLeft.setDirection(DcMotor.Direction.REVERSE);  // REVERSED
             shooterLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
             shooterLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            shooterRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             shooterLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            shooterRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+            shooterLeft.setVelocityPIDFCoefficients(10.0, 0.0, 0.0, 13.5);
+            shooterRight.setVelocityPIDFCoefficients(10.0, 0.0, 0.0, 13.5);
+
         }
 
         if (shooterRight != null) {
@@ -215,7 +226,7 @@ public class Penguinauts_MecanumDrive extends LinearOpMode {
             shooterRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             shooterRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
-        
+
         // Set intake motor directions
         // Both motors run same direction to move game elements through
         if (intakeFront != null) {
@@ -223,7 +234,7 @@ public class Penguinauts_MecanumDrive extends LinearOpMode {
             intakeFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             intakeFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
-        
+
         if (intakeBack != null) {
             intakeBack.setDirection(DcMotor.Direction.FORWARD);
             intakeBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -247,7 +258,7 @@ public class Penguinauts_MecanumDrive extends LinearOpMode {
         telemetry.addData("", "");
         telemetry.addData("DRIVE Controls", "Left stick: Drive/Strafe");
         telemetry.addData("", "Right stick: Rotate");
-        
+
         // Show shooter controls if at least one motor is available
         if (shooterLeft != null || shooterRight != null) {
             telemetry.addData("", "");
@@ -255,7 +266,7 @@ public class Penguinauts_MecanumDrive extends LinearOpMode {
             telemetry.addData("Left Bumper", "FRONT zone %.0f%% (close)", SHOOTER_POWER_FRONT * 100);
             telemetry.addData("Left Trigger", "BACK zone %.0f%% (far)", SHOOTER_POWER_BACK * 100);
             telemetry.addData("B Button", "Stop shooter");
-            
+
             // Show which motors are available
             if (shooterLeft != null && shooterRight != null) {
                 telemetry.addData("Shooter Mode", "✓ DUAL MOTOR (full power)");
@@ -265,14 +276,14 @@ public class Penguinauts_MecanumDrive extends LinearOpMode {
                 telemetry.addData("Shooter Mode", "⚠ RIGHT MOTOR ONLY");
             }
         }
-        
+
         // Show front intake controls if motor is available
         if (intakeFront != null) {
             telemetry.addData("", "");
             telemetry.addData("FRONT INTAKE", "(Front + Middle rollers)");
             telemetry.addData("Controls", "RT: Collect | Y: Eject");
         }
-        
+
         // Show back intake + trap door controls
         if (intakeBack != null || trapDoor != null) {
             telemetry.addData("", "");
@@ -280,11 +291,11 @@ public class Penguinauts_MecanumDrive extends LinearOpMode {
             telemetry.addData("RB", "Open trap door + Outtake ball");
             telemetry.addData("A", "Pull back (trap door closed)");
         }
-        
+
         if (intakeFront != null || intakeBack != null) {
             telemetry.addData("Intake Speed", "%.0f%% (adjust in Dashboard)", INTAKE_POWER * 100);
         }
-        
+
         telemetry.update();
 
         waitForStart();
@@ -292,9 +303,9 @@ public class Penguinauts_MecanumDrive extends LinearOpMode {
 
         // Run until the driver presses STOP
         while (opModeIsActive()) {
-            
+
             // ========== DRIVE CONTROLS ==========
-            
+
             // Get joystick inputs
             // Note: Pushing stick forward gives negative value, so we negate it
             double axial = -gamepad1.left_stick_y;  // Forward/backward
@@ -334,9 +345,9 @@ public class Penguinauts_MecanumDrive extends LinearOpMode {
             frontRightDrive.setPower(frontRightPower);
             backLeftDrive.setPower(backLeftPower);
             backRightDrive.setPower(backRightPower);
-            
+
             // ========== SHOOTER CONTROLS ==========
-            
+
             String shooterStatus = "STOPPED";
             String shooterMode = "N/A";
             String shootingZone = "NONE";
@@ -402,12 +413,12 @@ public class Penguinauts_MecanumDrive extends LinearOpMode {
                     shooterMode = "RIGHT ONLY";
                 }
             }
-            
+
             // ========== FRONT INTAKE CONTROLS (Front + Middle rollers) ==========
-            
+
             String frontIntakeStatus = "STOPPED";
             double frontIntakePower = 0.0;
-            
+
             // Operate front intake independently
             if (intakeFront != null) {
                 // Right Trigger: Run front intake FORWARD (collect) - only while held
@@ -429,13 +440,13 @@ public class Penguinauts_MecanumDrive extends LinearOpMode {
                     frontIntakePower = 0.0;
                 }
             }
-            
+
             // ========== BACK INTAKE + TRAP DOOR CONTROLS ==========
-            
+
             String backIntakeStatus = "STOPPED";
             double backIntakePower = 0.0;
             String trapDoorStatus = "CLOSED";
-            
+
             // Right Bumper: Open trap door + start shooter immediately, wait 500ms, then run back intake
             if (gamepad1.right_bumper) {
                 // Check if shooter is already running at speed (using velocity threshold)
@@ -448,7 +459,7 @@ public class Penguinauts_MecanumDrive extends LinearOpMode {
                 }
                 if (shooterLeft != null) shooterLeft.setVelocity(selectedShooterVelocity);
                 if (shooterRight != null) shooterRight.setVelocity(selectedShooterVelocity);
-                
+
                 if (shooterAlreadyRunning) {
                     // Shooter already at speed - run back intake immediately!
                     if (intakeBack != null) {
@@ -518,7 +529,7 @@ public class Penguinauts_MecanumDrive extends LinearOpMode {
             telemetry.addData("", "");
             telemetry.addData("Drive Power", "FL: %.2f, FR: %.2f", frontLeftPower, frontRightPower);
             telemetry.addData("", "BL: %.2f, BR: %.2f", backLeftPower, backRightPower);
-            
+
             if (shooterLeft != null || shooterRight != null) {
                 telemetry.addData("", "");
                 telemetry.addData("=== SHOOTER ===", "");
@@ -530,7 +541,7 @@ public class Penguinauts_MecanumDrive extends LinearOpMode {
                 telemetry.addData("", "");
                 telemetry.addData("Controls", "LB=Front | LT=Back | B=Stop");
             }
-            
+
             // Display Front Intake telemetry
             if (intakeFront != null) {
                 telemetry.addData("", "");
@@ -539,7 +550,7 @@ public class Penguinauts_MecanumDrive extends LinearOpMode {
                 telemetry.addData("Power", "%.0f%%", frontIntakePower * 100);
                 telemetry.addData("Controls", "RT=Collect | Y=Eject");
             }
-            
+
             // Display Back Intake + Trap Door telemetry
             if (intakeBack != null || trapDoor != null) {
                 telemetry.addData("", "");
@@ -552,13 +563,13 @@ public class Penguinauts_MecanumDrive extends LinearOpMode {
                 }
                 telemetry.addData("Controls", "RB=Open+Outtake | A=Pull Back");
             }
-            
+
             // Show intake speed config if any intake is available
             if (intakeFront != null || intakeBack != null) {
                 telemetry.addData("", "");
                 telemetry.addData("Intake Config Speed", "%.0f%% (Dashboard)", INTAKE_POWER * 100);
             }
-            
+
             telemetry.update();
         }
     }
