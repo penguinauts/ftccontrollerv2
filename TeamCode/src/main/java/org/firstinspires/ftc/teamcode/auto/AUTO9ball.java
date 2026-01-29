@@ -30,16 +30,14 @@ public class AUTO9ball extends LinearOpMode {
     public static double LEFT_MOTOR_POWER = 0.5;
     public static double RIGHT_MOTOR_POWER = 0.5;
     public static double DRIVE_DISTANCE = 15;
-    public static double P = 8;
-
-    public static double I = 0;
-    public static double D = 0;
-    public static double F = 12.7;
+    public static double P = 10.0;
+    public static double I = 0.0;
+    public static double D = 0.0;
+    public static double F = 13.5;
 
     private static final double COUNTS_PER_DEGREE = 10.0;
     private static final double TURN_SPEED = 0.4;
     // Shooter velocity (ticks/sec)
-    public static double SHOOTER_VELOCITY_FRONT = 1680;
     public static double SHOOTER_VELOCITY_BALL1 = 1550;
     public static double SHOOTER_VELOCITY_BALL2 = 1550;
     public static double SHOOTER_VELOCITY_BALL3 = 1550;
@@ -54,9 +52,6 @@ public class AUTO9ball extends LinearOpMode {
     public static double TRAP_DOOR_CLOSED = 1.0;
     public static double TRAP_DOOR_OPEN = 0.85;
     public static double TURN = -67.5;
-    // ===== SHOOTER (SINGLE MOTOR) =====
-    private DcMotorEx shooter = null;
-
     // ===== INTAKES =====
     private DcMotor intakeFront = null;
     private DcMotor intakeBack = null;
@@ -74,10 +69,10 @@ public class AUTO9ball extends LinearOpMode {
     public void runOpMode() {
 
         // ===== HARDWARE MAP =====
-        frontLeft  = hardwareMap.get(DcMotor.class, "front_left_drive");
-        frontRight = hardwareMap.get(DcMotor.class, "front_right_drive");
-        backLeft   = hardwareMap.get(DcMotor.class, "back_left_drive");
-        backRight  = hardwareMap.get(DcMotor.class, "back_right_drive");
+        frontLeft  = hardwareMap.get(DcMotor.class, "FL");
+        frontRight = hardwareMap.get(DcMotor.class, "FR");
+        backLeft   = hardwareMap.get(DcMotor.class, "BL");
+        backRight  = hardwareMap.get(DcMotor.class, "BR");
 
         frontLeft.setDirection(DcMotor.Direction.REVERSE);
         backLeft.setDirection(DcMotor.Direction.REVERSE);
@@ -100,6 +95,8 @@ public class AUTO9ball extends LinearOpMode {
         shooterRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         shooterRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+        // Apply PIDF coefficients
+        setShooterPIDF();
 
 // Front intake
         intakeFront = hardwareMap.get(DcMotor.class, "IF");
@@ -122,7 +119,7 @@ public class AUTO9ball extends LinearOpMode {
         imu = hardwareMap.get(IMU.class, "imu");
         imu.initialize(new IMU.Parameters(
                 new RevHubOrientationOnRobot(
-                        RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+                        RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
                         RevHubOrientationOnRobot.UsbFacingDirection.UP
                 )
         ));
@@ -142,7 +139,6 @@ public class AUTO9ball extends LinearOpMode {
 
 
         imu.resetYaw();
-        double heading = getHeading();
         driveStraight(3, 1, 1,0);
         sleep(100);
         turnDegrees(29);

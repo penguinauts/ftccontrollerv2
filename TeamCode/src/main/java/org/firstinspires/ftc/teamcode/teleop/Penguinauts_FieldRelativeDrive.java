@@ -264,11 +264,11 @@ public class Penguinauts_FieldRelativeDrive extends LinearOpMode {
         imu = hardwareMap.get(IMU.class, "imu");
         
         // Define the orientation of the Control Hub on the robot
-        // Adjust these values based on how your Control Hub is mounted
-        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = 
-                RevHubOrientationOnRobot.LogoFacingDirection.UP;
-        RevHubOrientationOnRobot.UsbFacingDirection usbDirection = 
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
+        // Hub is mounted vertically with logo facing left, USB facing up
+        RevHubOrientationOnRobot.LogoFacingDirection logoDirection =
+                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
+        RevHubOrientationOnRobot.UsbFacingDirection usbDirection =
+                RevHubOrientationOnRobot.UsbFacingDirection.UP;
         
         RevHubOrientationOnRobot orientationOnRobot = 
                 new RevHubOrientationOnRobot(logoDirection, usbDirection);

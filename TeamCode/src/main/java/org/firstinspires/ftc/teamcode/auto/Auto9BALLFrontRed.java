@@ -31,11 +31,10 @@ public class Auto9BALLFrontRed extends LinearOpMode {
     public static double LEFT_MOTOR_POWER = 0.5;
     public static double RIGHT_MOTOR_POWER = 0.5;
     public static double DRIVE_DISTANCE = 15;
-    public static double P = 8;
-
-    public static double I = 0;
-    public static double D = 0;
-    public static double F = 12.7;
+    public static double P = 10.0;
+    public static double I = 0.0;
+    public static double D = 0.0;
+    public static double F = 13.5;
 
     private static final double COUNTS_PER_DEGREE = 10.0;
     private static final double TURN_SPEED = 0.4;
@@ -60,8 +59,6 @@ public class Auto9BALLFrontRed extends LinearOpMode {
     public static double TRAP_DOOR_CLOSED = 1.0;
     public static double TRAP_DOOR_OPEN = 0.85;
     public static double TURN = -59.90;
-    // ===== SHOOTER (SINGLE MOTOR) =====
-    private DcMotorEx shooter = null;
 
     // ===== INTAKES =====
     private DcMotor intakeFront = null;
@@ -133,7 +130,7 @@ public class Auto9BALLFrontRed extends LinearOpMode {
         imu = hardwareMap.get(IMU.class, "imu");
         imu.initialize(new IMU.Parameters(
                 new RevHubOrientationOnRobot(
-                        RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+                        RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
                         RevHubOrientationOnRobot.UsbFacingDirection.UP
                 )
         ));
@@ -151,9 +148,8 @@ public class Auto9BALLFrontRed extends LinearOpMode {
 //        ↘ Right-Backward    FL −   BR −
 //        ↙ Left-Backward     FR −   BL −
 
-setShooterPIDF();
+        setShooterPIDF();
         imu.resetYaw();
-        double heading = getHeading();
         driveStraight(-40, 1, 1,0);
 //        sleep(100);
         startShooter(SHOOTER_VELOCITY_BALL1);
@@ -259,9 +255,9 @@ setShooterPIDF();
         intakeBack.setPower(1);
         sleep(600);
         strafeRight(8,1,0);
-//        stopShooter();
-//        intakeFront.setPower(0);
-//        intakeBack.setPower(0);
+        stopShooter();
+        intakeFront.setPower(0);
+        intakeBack.setPower(0);
     }
 
     // ================= MOTOR UTIL =================
