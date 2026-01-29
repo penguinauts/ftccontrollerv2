@@ -1,6 +1,4 @@
-package org.firstinspires.ftc.teamcode;
-
-import android.util.Log;
+package org.firstinspires.ftc.teamcode.auto;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -12,7 +10,6 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotserver.internal.webserver.controlhubupdater.result.Result;
 
 @Config
 @Autonomous
@@ -33,17 +30,22 @@ public class AUTO9ball extends LinearOpMode {
     public static double LEFT_MOTOR_POWER = 0.5;
     public static double RIGHT_MOTOR_POWER = 0.5;
     public static double DRIVE_DISTANCE = 15;
+    public static double P = 8;
+
+    public static double I = 0;
+    public static double D = 0;
+    public static double F = 12.7;
 
     private static final double COUNTS_PER_DEGREE = 10.0;
     private static final double TURN_SPEED = 0.4;
     // Shooter velocity (ticks/sec)
     public static double SHOOTER_VELOCITY_FRONT = 1680;
-    public static double SHOOTER_VELOCITY_BALL1 = 1320;
-    public static double SHOOTER_VELOCITY_BALL2 = 1335;
-    public static double SHOOTER_VELOCITY_BALL3 = 1355;
-    public static double SHOOTER_VELOCITY_BALL4 = 1310;
-    public static double SHOOTER_VELOCITY_BALL5 = 1320;
-    public static double SHOOTER_VELOCITY_BALL6 = 1340;
+    public static double SHOOTER_VELOCITY_BALL1 = 1550;
+    public static double SHOOTER_VELOCITY_BALL2 = 1550;
+    public static double SHOOTER_VELOCITY_BALL3 = 1550;
+    public static double SHOOTER_VELOCITY_BALL4 = 1550;
+    public static double SHOOTER_VELOCITY_BALL5 = 1550;
+    public static double SHOOTER_VELOCITY_BALL6 = 1550;
 
     // Intake power
     public static double INTAKE_POWER = 1.0;
@@ -530,7 +532,10 @@ public class AUTO9ball extends LinearOpMode {
                 && Math.abs(rightVel - targetVelocity) < 150;
     }
 
-
+    private void setShooterPIDF() {
+        shooterLeft.setVelocityPIDFCoefficients(P, I, D, F);
+        shooterRight.setVelocityPIDFCoefficients(P, I, D, F);
+    }
 
 
 
