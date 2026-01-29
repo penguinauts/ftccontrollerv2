@@ -7,14 +7,13 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 @Config
 @Autonomous
-public class Auto9BALLFront extends LinearOpMode {
+public class Auto9BALLFrontRed extends LinearOpMode {
 
 
     // ===== MOTORS =====
@@ -42,15 +41,15 @@ public class Auto9BALLFront extends LinearOpMode {
     private static final double TURN_SPEED = 0.4;
     // Shooter velocity (ticks/sec)
 
-    public static double SHOOTER_VELOCITY_BALL1 = 1150;
-    public static double SHOOTER_VELOCITY_BALL2 = 1150;
-    public static double SHOOTER_VELOCITY_BALL3 = 1150;
-    public static double SHOOTER_VELOCITY_BALL4 = 1150;
-    public static double SHOOTER_VELOCITY_BALL5 = 1150;
-    public static double SHOOTER_VELOCITY_BALL6 = 1150;
-    public static double SHOOTER_VELOCITY_BALL7 = 1150;
-    public static double SHOOTER_VELOCITY_BALL8 = 1150;
-    public static double SHOOTER_VELOCITY_BALL9 = 1150;
+    public static double SHOOTER_VELOCITY_BALL1 = 1397;
+    public static double SHOOTER_VELOCITY_BALL2 = 1397;
+    public static double SHOOTER_VELOCITY_BALL3 = 1397;
+    public static double SHOOTER_VELOCITY_BALL4 = 1405;
+    public static double SHOOTER_VELOCITY_BALL5 = 1397;
+    public static double SHOOTER_VELOCITY_BALL6 = 1397;
+    public static double SHOOTER_VELOCITY_BALL7 = 1397;
+    public static double SHOOTER_VELOCITY_BALL8 = 1397;
+    public static double SHOOTER_VELOCITY_BALL9 = 1397;
 
     public static double TURN_TO_INTAKE = 46;
 
@@ -74,6 +73,9 @@ public class Auto9BALLFront extends LinearOpMode {
     // ===== SHOOTER (DUAL MOTORS, SINGLE SYSTEM) =====
     private DcMotorEx shooterLeft;   // SL
     private DcMotorEx shooterRight;  // SR
+    public static double STRAFE_3RD_SET_OF_BALLS = 13.82;
+
+    public static double TURN_FOR_3 = 55;
 
 
 
@@ -81,10 +83,10 @@ public class Auto9BALLFront extends LinearOpMode {
     public void runOpMode() {
 
         // ===== HARDWARE MAP =====
-        frontLeft  = hardwareMap.get(DcMotor.class, "front_left_drive");
-        frontRight = hardwareMap.get(DcMotor.class, "front_right_drive");
-        backLeft   = hardwareMap.get(DcMotor.class, "back_left_drive");
-        backRight  = hardwareMap.get(DcMotor.class, "back_right_drive");
+        frontLeft  = hardwareMap.get(DcMotor.class, "FL");
+        frontRight = hardwareMap.get(DcMotor.class, "FR");
+        backLeft   = hardwareMap.get(DcMotor.class, "BL");
+        backRight  = hardwareMap.get(DcMotor.class, "BR");
 
         frontLeft.setDirection(DcMotor.Direction.REVERSE);
         backLeft.setDirection(DcMotor.Direction.REVERSE);
@@ -149,7 +151,7 @@ public class Auto9BALLFront extends LinearOpMode {
 //        ↘ Right-Backward    FL −   BR −
 //        ↙ Left-Backward     FR −   BL −
 
-
+setShooterPIDF();
         imu.resetYaw();
         double heading = getHeading();
         driveStraight(-40, 1, 1,0);
@@ -194,10 +196,11 @@ public class Auto9BALLFront extends LinearOpMode {
         intakeFront.setPower(1);
         intakeBack.setPower(-0.5);
 //        sleep(80);
-        driveStraight(38, 0.68, 0.68,0);
+        driveStraight(39, 0.68, 0.68,0);
         driveStraight(-32.4, 1, 1,0);
 //        driveDiagonalLeftBackward(32, 1, 0);
         turnDegrees(TURN);
+        strafeLeft(1.55,1,0);
 //        driveStraight(-2.5, 1, 1,0);
         startShooter(SHOOTER_VELOCITY_BALL4);
 //
@@ -227,14 +230,14 @@ public class Auto9BALLFront extends LinearOpMode {
 //
         intakeFront.setPower(1);
         intakeBack.setPower(-0.5);
-        strafeRight(19,1,0);
-        turnDegrees(45);
-        strafeRight(12.7,1,0);
-        driveStraight(38, 0.68, 0.68,0);
+        strafeRight(17,1,0);
+        turnDegrees(TURN_FOR_3);
+        strafeRight(STRAFE_3RD_SET_OF_BALLS,1,0);
+        driveStraight(40, 0.68, 0.68,0);
         driveStraight(-12, 1, 1,0);
         driveDiagonalRightBackward(12,1,0);
         turnDegrees(-55);
-        strafeLeft(23,1,0);
+        strafeLeft(26,1,0);
         startShooter(SHOOTER_VELOCITY_BALL7);
 
         while (opModeIsActive() && !shooterAtSpeed(SHOOTER_VELOCITY_BALL7)) {
@@ -255,9 +258,10 @@ public class Auto9BALLFront extends LinearOpMode {
         intakeFront.setPower(1);
         intakeBack.setPower(1);
         sleep(600);
-        stopShooter();
-        intakeFront.setPower(0);
-        intakeBack.setPower(0);
+        strafeRight(8,1,0);
+//        stopShooter();
+//        intakeFront.setPower(0);
+//        intakeBack.setPower(0);
     }
 
     // ================= MOTOR UTIL =================
@@ -368,16 +372,16 @@ public class Auto9BALLFront extends LinearOpMode {
         stopMotors();
     }
 
-    public void strafeRight(double inches, double power, double heading) {
+    public void strafeLeft(double inches, double power, double heading) {
         strafe(-Math.abs(inches), power, heading);
     }
 
-    public void strafeLeft(double inches, double power, double heading) {
+    public void strafeRight(double inches, double power, double heading) {
         strafe(Math.abs(inches), power, heading);
     }
     // ================= DIAGONAL (RIGHT-FORWARD) =================
 
-    public void driveDiagonalLeftForward(double inches, double power, double heading) {
+    public void driveDiagonalRightForward(double inches, double power, double heading) {
         int ticks = (int) (Math.abs(inches) * TICKS_PER_INCH);
         double dir = Math.signum(inches);
 
@@ -414,7 +418,7 @@ public class Auto9BALLFront extends LinearOpMode {
     }
     // ================= DIAGONAL (LEFT-FORWARD) =================
 
-    public void driveDiagonalRightForward(double inches, double power, double heading) {
+    public void driveDiagonalLeftForward(double inches, double power, double heading) {
         int ticks = (int) (Math.abs(inches) * TICKS_PER_INCH);
         double dir = Math.signum(inches);
 
@@ -451,7 +455,7 @@ public class Auto9BALLFront extends LinearOpMode {
     }
     // ================= DIAGONAL (LEFT-BACKWARD) =================
 
-    public void driveDiagonalRightBackward(double inches, double power, double heading) {
+    public void driveDiagonalLeftBackward(double inches, double power, double heading) {
         int ticks = (int) (Math.abs(inches) * TICKS_PER_INCH);
         double dir = -Math.signum(inches); // backward
 
@@ -487,7 +491,7 @@ public class Auto9BALLFront extends LinearOpMode {
     }
 // ================= DIAGONAL (RIGHT-BACKWARD) =================
 
-    public void driveDiagonalLeftBackward(double inches, double power, double heading) {
+    public void driveDiagonalRightBackward(double inches, double power, double heading) {
         int ticks = (int) (Math.abs(inches) * TICKS_PER_INCH);
         double dir = -Math.signum(inches); // backward
 
