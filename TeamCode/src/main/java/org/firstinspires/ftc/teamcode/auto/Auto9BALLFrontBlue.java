@@ -32,14 +32,14 @@ public class Auto9BALLFrontBlue extends LinearOpMode {
 
     // Shooter velocity (ticks/sec)
     public static double SHOOTER_VELOCITY_BALL1 = 1350;
-    public static double SHOOTER_VELOCITY_BALL2 = 1400;
-    public static double SHOOTER_VELOCITY_BALL3 = 1425;
+    public static double SHOOTER_VELOCITY_BALL2 = 1410;
+    public static double SHOOTER_VELOCITY_BALL3 = 1435;
     public static double SHOOTER_VELOCITY_BALL4 = 1400;
-    public static double SHOOTER_VELOCITY_BALL5 = 1425;
-    public static double SHOOTER_VELOCITY_BALL6 = 1425;
-    public static double SHOOTER_VELOCITY_BALL7 = 1425;
-    public static double SHOOTER_VELOCITY_BALL8 = 1425;
-    public static double SHOOTER_VELOCITY_BALL9 = 1425;
+    public static double SHOOTER_VELOCITY_BALL5 = 1400;
+    public static double SHOOTER_VELOCITY_BALL6 = 1400;
+    public static double SHOOTER_VELOCITY_BALL7 = 1175;
+    public static double SHOOTER_VELOCITY_BALL8 = 1200;
+    public static double SHOOTER_VELOCITY_BALL9 = 1225;
 
     // BLUE MIRROR: flip signs vs Red
     public static double TURN_TO_INTAKE = -46;
@@ -163,8 +163,8 @@ public class Auto9BALLFrontBlue extends LinearOpMode {
         intakeFront.setPower(1);
         intakeBack.setPower(-0.5);
 
-        driveStraight(39, 0.68, 0.68, 0);
-        driveStraight(-32.4, 1, 1, 0);
+        driveStraight(40, 0.68, 0.68, 0);
+        driveStraight(-33.4, 1, 1, 0);
 
         // MIRROR TURN
         turnDegrees(TURN);
@@ -191,13 +191,13 @@ public class Auto9BALLFrontBlue extends LinearOpMode {
         turnDegrees(-45);
 
         // MIRROR STRAFE RIGHT -> LEFT
-        strafeRight(27, 1, 0);
+        strafeRight(25.8, 1, 0);
 //
 //        // MIRROR STRAFE RIGHT -> LEFT
 //        strafeLeft(12.7, 1, 0);
 
-        driveStraight(41, 0.68, 0.68, 0);
-        driveStraight(-12, 1, 1, 0);
+        driveStraight(42.5, 0.68, 0.68, 0);
+        driveStraight(-12.5, 1, 1, 0);
 
         // MIRROR DIAGONAL RightBackward -> LeftBackward
         driveDiagonalRightForward(-20, 1, 0);
@@ -207,6 +207,7 @@ public class Auto9BALLFrontBlue extends LinearOpMode {
 
         // MIRROR STRAFE LEFT -> RIGHT
         strafeLeft(23, 1, 0);
+        driveStraight(25,1,1,0);
 
         // Shoot 3
         startShooter(SHOOTER_VELOCITY_BALL7);
