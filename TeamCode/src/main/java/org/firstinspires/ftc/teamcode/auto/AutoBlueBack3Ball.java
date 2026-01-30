@@ -70,6 +70,7 @@ public class AutoBlueBack3Ball extends LinearOpMode {
     public static double TRAP_DOOR_CLOSED = 1.0;
 
     // ========== SEQUENCE CONSTANTS ==========
+    public static int WAIT_BEFORE_SHOOT_SEC = 15;             // Seconds to wait before shooting (0 = no wait)
     public static double DRIVE_TO_SHOOT = 5.0;
     public static double DRIVE_POWER_APPROACH = 0.5;
     public static double TURN_TO_GOAL = -25.0;
@@ -90,6 +91,18 @@ public class AutoBlueBack3Ball extends LinearOpMode {
 
         setShooterPIDF();
         imu.resetYaw();
+
+        // Wait before shooting (with countdown)
+        if (WAIT_BEFORE_SHOOT_SEC > 0) {
+            for (int i = WAIT_BEFORE_SHOOT_SEC; i > 0; i--) {
+                telemetry.addData("Phase 1", "Waiting to shoot");
+                telemetry.addData("Countdown", "%d seconds", i);
+                telemetry.addData("Heading", "%.2f degrees", getHeading());
+                telemetry.update();
+                sleep(1000);
+                if (!opModeIsActive()) return;
+            }
+        }
 
         // ===== PHASE 1: Shoot 3 preloaded balls =====
         updateTelemetry("Phase 1", "Driving to shooting position");
