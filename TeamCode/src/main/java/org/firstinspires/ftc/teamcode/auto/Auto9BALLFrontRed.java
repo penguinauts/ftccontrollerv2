@@ -40,17 +40,17 @@ public class Auto9BALLFrontRed extends LinearOpMode {
     private static final double TURN_SPEED = 0.4;
     // Shooter velocity (ticks/sec)
 
-    public static double SHOOTER_VELOCITY_BALL1 = 1397;
-    public static double SHOOTER_VELOCITY_BALL2 = 1397;
-    public static double SHOOTER_VELOCITY_BALL3 = 1397;
-    public static double SHOOTER_VELOCITY_BALL4 = 1405;
-    public static double SHOOTER_VELOCITY_BALL5 = 1397;
-    public static double SHOOTER_VELOCITY_BALL6 = 1397;
-    public static double SHOOTER_VELOCITY_BALL7 = 1397;
-    public static double SHOOTER_VELOCITY_BALL8 = 1397;
-    public static double SHOOTER_VELOCITY_BALL9 = 1397;
+    public static double SHOOTER_VELOCITY_BALL1 = 1300;
+    public static double SHOOTER_VELOCITY_BALL2 = 1360;
+    public static double SHOOTER_VELOCITY_BALL3 = 1365;
+    public static double SHOOTER_VELOCITY_BALL4 = 1302;
+    public static double SHOOTER_VELOCITY_BALL5 = 1360;
+    public static double SHOOTER_VELOCITY_BALL6 = 1360;
+    public static double SHOOTER_VELOCITY_BALL7 = 1360;
+    public static double SHOOTER_VELOCITY_BALL8 = 1360;
+    public static double SHOOTER_VELOCITY_BALL9 = 1360;
 
-    public static double TURN_TO_INTAKE = 46;
+    public static double TURN_TO_INTAKE = 45;
 
     // Intake power
     public static double INTAKE_POWER = 1.0;
@@ -58,7 +58,7 @@ public class Auto9BALLFrontRed extends LinearOpMode {
     // Trap door positions
     public static double TRAP_DOOR_CLOSED = 1.0;
     public static double TRAP_DOOR_OPEN = 0.85;
-    public static double TURN = -59.90;
+    public static double TURN2 = -57;
 
     // ===== INTAKES =====
     private DcMotor intakeFront = null;
@@ -72,7 +72,8 @@ public class Auto9BALLFrontRed extends LinearOpMode {
     private DcMotorEx shooterRight;  // SR
     public static double STRAFE_3RD_SET_OF_BALLS = 13.82;
 
-    public static double TURN_FOR_3 = 55;
+    public static double TURN_FOR_3 = 53.2;
+    public static double STRAFE_FOR_2 = 6.1;
 
 
 
@@ -150,7 +151,9 @@ public class Auto9BALLFrontRed extends LinearOpMode {
 
         setShooterPIDF();
         imu.resetYaw();
-        driveStraight(-40, 1, 1,0);
+//        driveStraight(-40, 0.5, 0.5,0);
+        driveStraight(-40, 0.5, 0.5,0);
+//        strafeLeft(1.75,0.65,0);
 //        sleep(100);
         startShooter(SHOOTER_VELOCITY_BALL1);
 
@@ -160,19 +163,19 @@ public class Auto9BALLFrontRed extends LinearOpMode {
         }
         intakeFront.setPower(1);
         intakeBack.setPower(1);
-        sleep(600);
-        while (opModeIsActive() && !shooterAtSpeed(SHOOTER_VELOCITY_BALL2)) {
-            idle();
-        }
-        intakeFront.setPower(1);
-        intakeBack.setPower(1);
-        sleep(600);
-        while (opModeIsActive() && !shooterAtSpeed(SHOOTER_VELOCITY_BALL3)) {
-            idle();
-        }
-        intakeFront.setPower(1);
-        intakeBack.setPower(1);
-        sleep(600);
+        sleep(1800);
+//        while (opModeIsActive() && !shooterAtSpeed(SHOOTER_VELOCITY_BALL2)) {
+//            idle();
+//        }
+//        intakeFront.setPower(1);
+//        intakeBack.setPower(1);
+//        sleep(600);
+//        while (opModeIsActive() && !shooterAtSpeed(SHOOTER_VELOCITY_BALL3)) {
+//            idle();
+//        }
+//        intakeFront.setPower(1);
+//        intakeBack.setPower(1);
+//        sleep(600);
         stopShooter();
         intakeFront.setPower(0);
         intakeBack.setPower(0);
@@ -186,78 +189,79 @@ public class Auto9BALLFrontRed extends LinearOpMode {
 
 //        driveDiagonalRightForward(21, 1,0);
 //        turnDegrees(68);
-////        driveStraight(19, 1, 0.26,0);
-////        sleep(100);
-        strafeRight(1.9,1,0);
+//        driveStraight(19, 1, 0.26,0);
+//        sleep(100);
+        strafeRight(STRAFE_FOR_2,1,0);
         intakeFront.setPower(1);
         intakeBack.setPower(-0.5);
 //        sleep(80);
-        driveStraight(39, 0.68, 0.68,0);
-        driveStraight(-32.4, 1, 1,0);
+        driveStraight(39, 0.5, 0.5,0);
+        sleep(200);
+        driveStraight(-32.4, 0.75, 0.75,0);
 //        driveDiagonalLeftBackward(32, 1, 0);
-        turnDegrees(TURN);
-        strafeLeft(1.55,1,0);
-//        driveStraight(-2.5, 1, 1,0);
+        turnDegrees(TURN2);
+        strafeLeft(0.55,0.5,0);
+////        driveStraight(-2.5, 1, 1,0);
         startShooter(SHOOTER_VELOCITY_BALL4);
+////
 //
-
         while (opModeIsActive() && !shooterAtSpeed(SHOOTER_VELOCITY_BALL4)) {
             idle();
         }
         intakeFront.setPower(1);
         intakeBack.setPower(1);
-        sleep(600);
-        while (opModeIsActive() && !shooterAtSpeed(SHOOTER_VELOCITY_BALL5)) {
-            idle();
-        }
-        intakeFront.setPower(1);
-        intakeBack.setPower(1);
-        sleep(600);
-        while (opModeIsActive() && !shooterAtSpeed(SHOOTER_VELOCITY_BALL6)) {
-            idle();
-        }
-        intakeFront.setPower(1);
-        intakeBack.setPower(1);
+        sleep(1800);
+//        while (opModeIsActive() && !shooterAtSpeed(SHOOTER_VELOCITY_BALL5)) {
+//            idle();
+//        }
+//        intakeFront.setPower(1);
+//        intakeBack.setPower(1);
+//        sleep(600);
+//        while (opModeIsActive() && !shooterAtSpeed(SHOOTER_VELOCITY_BALL6)) {
+//            idle();
+//        }
+//        intakeFront.setPower(1);
+//        intakeBack.setPower(1);
         sleep(600);
         stopShooter();
         intakeFront.setPower(0);
         intakeBack.setPower(0);
-
 //
-        intakeFront.setPower(1);
-        intakeBack.setPower(-0.5);
-        strafeRight(17,1,0);
-        turnDegrees(TURN_FOR_3);
-        strafeRight(STRAFE_3RD_SET_OF_BALLS,1,0);
-        driveStraight(40, 0.68, 0.68,0);
-        driveStraight(-12, 1, 1,0);
-        driveDiagonalRightBackward(12,1,0);
-        turnDegrees(-55);
-        strafeLeft(26,1,0);
-        startShooter(SHOOTER_VELOCITY_BALL7);
-
-        while (opModeIsActive() && !shooterAtSpeed(SHOOTER_VELOCITY_BALL7)) {
-            idle();
-        }
-        intakeFront.setPower(1);
-        intakeBack.setPower(1);
-        sleep(600);
-        while (opModeIsActive() && !shooterAtSpeed(SHOOTER_VELOCITY_BALL8)) {
-            idle();
-        }
-        intakeFront.setPower(1);
-        intakeBack.setPower(1);
-        sleep(600);
-        while (opModeIsActive() && !shooterAtSpeed(SHOOTER_VELOCITY_BALL9)) {
-            idle();
-        }
-        intakeFront.setPower(1);
-        intakeBack.setPower(1);
-        sleep(600);
-        strafeRight(8,1,0);
-        stopShooter();
-        intakeFront.setPower(0);
-        intakeBack.setPower(0);
+////
+//        intakeFront.setPower(1);
+//        intakeBack.setPower(-0.5);
+//        strafeRight(17,0.8,0);
+//        turnDegrees(TURN_FOR_3);
+//        strafeRight(STRAFE_3RD_SET_OF_BALLS,1,0);
+//        driveStraight(40, 0.5, 0.5,0);
+//        driveStraight(-12, 0.75, 0.75,0);
+//        driveDiagonalRightBackward(12,0.8,0);
+//        turnDegrees(-55);
+//        strafeLeft(27.4,0.8,0);
+//        startShooter(SHOOTER_VELOCITY_BALL7);
+//
+//        while (opModeIsActive() && !shooterAtSpeed(SHOOTER_VELOCITY_BALL7)) {
+//            idle();
+//        }
+//        intakeFront.setPower(1);
+//        intakeBack.setPower(1);
+//        sleep(600);
+//        while (opModeIsActive() && !shooterAtSpeed(SHOOTER_VELOCITY_BALL8)) {
+//            idle();
+//        }
+//        intakeFront.setPower(1);
+//        intakeBack.setPower(1);
+//        sleep(600);
+//        while (opModeIsActive() && !shooterAtSpeed(SHOOTER_VELOCITY_BALL9)) {
+//            idle();
+//        }
+//        intakeFront.setPower(1);
+//        intakeBack.setPower(1);
+//        sleep(600);
+//        strafeRight(8,1,0);
+//        stopShooter();
+//        intakeFront.setPower(0);
+//        intakeBack.setPower(0);
     }
 
     // ================= MOTOR UTIL =================
