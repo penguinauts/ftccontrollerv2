@@ -43,7 +43,7 @@ public class Auto9BALLFrontBlue extends LinearOpMode {
 
     // BLUE MIRROR: flip signs vs Red
     public static double TURN_TO_INTAKE = -46;
-    public static double TURN = +50;
+    public static double TURN = +51;
 
     // Trap door positions (unchanged)
     public static double TRAP_DOOR_CLOSED = 1.0;
@@ -208,7 +208,7 @@ public class Auto9BALLFrontBlue extends LinearOpMode {
         strafeLeft(30,1,0);
 
         // MIRROR TURN -55 -> +55
-        turnDegrees(62);
+        turnDegrees(65);
 
         // MIRROR STRAFE LEFT -> RIGHT
 //        strafeLeft(16, 1, 0);
