@@ -31,19 +31,19 @@ public class Auto9BALLFrontBlue extends LinearOpMode {
     private static final double TURN_SPEED = 0.4;
 
     // Shooter velocity (ticks/sec)
-    public static double SHOOTER_VELOCITY_BALL1 = 1350;
-    public static double SHOOTER_VELOCITY_BALL2 = 1410;
-    public static double SHOOTER_VELOCITY_BALL3 = 1435;
-    public static double SHOOTER_VELOCITY_BALL4 = 1400;
-    public static double SHOOTER_VELOCITY_BALL5 = 1400;
-    public static double SHOOTER_VELOCITY_BALL6 = 1400;
-    public static double SHOOTER_VELOCITY_BALL7 = 1175;
-    public static double SHOOTER_VELOCITY_BALL8 = 1200;
-    public static double SHOOTER_VELOCITY_BALL9 = 1225;
+    public static double SHOOTER_VELOCITY_BALL1 = 1200;
+    public static double SHOOTER_VELOCITY_BALL2 = 1225;
+    public static double SHOOTER_VELOCITY_BALL3 = 1225;
+    public static double SHOOTER_VELOCITY_BALL4 = 1250;
+    public static double SHOOTER_VELOCITY_BALL5 = 1250;
+    public static double SHOOTER_VELOCITY_BALL6 = 1250;
+    public static double SHOOTER_VELOCITY_BALL7 = 1250;
+    public static double SHOOTER_VELOCITY_BALL8 = 1250;
+    public static double SHOOTER_VELOCITY_BALL9 = 1250;
 
     // BLUE MIRROR: flip signs vs Red
     public static double TURN_TO_INTAKE = -46;
-    public static double TURN = +59.90;
+    public static double TURN = +50;
 
     // Trap door positions (unchanged)
     public static double TRAP_DOOR_CLOSED = 1.0;
@@ -138,7 +138,7 @@ public class Auto9BALLFrontBlue extends LinearOpMode {
         // BLUE AUTO (MIRROR OF RED)
         // =========================
 
-        driveStraight(-40, 1, 1, 0);
+        driveStraight(-20, 1, 1, 0);
 
         // Shoot 3
         startShooter(SHOOTER_VELOCITY_BALL1);
@@ -152,22 +152,25 @@ public class Auto9BALLFrontBlue extends LinearOpMode {
         intakeFront.setPower(1); intakeBack.setPower(1); sleep(600);
 
         stopShooter();
+        driveStraight(-10, 1, 1, 0);
         intakeFront.setPower(0); intakeBack.setPower(0);
 
         // MIRROR TURN
         turnDegrees(TURN_TO_INTAKE);
 
         // MIRROR STRAFE RIGHT -> LEFT
-        strafeRight(1.9, 1, 0);
+        strafeRight(9, 1, 0);
 
         intakeFront.setPower(1);
         intakeBack.setPower(-0.5);
 
-        driveStraight(40, 0.68, 0.68, 0);
-        driveStraight(-33.4, 1, 1, 0);
+        driveStraight(33.5, 0.68, 0.68, 0);
+        driveStraight(-30, 1, 1, 0);
 
         // MIRROR TURN
         turnDegrees(TURN);
+
+        driveStraight(10, 1, 1, 0);
 
         // Shoot 3
         startShooter(SHOOTER_VELOCITY_BALL4);
@@ -181,6 +184,7 @@ public class Auto9BALLFrontBlue extends LinearOpMode {
         intakeFront.setPower(1); intakeBack.setPower(1); sleep(600);
 
         stopShooter();
+//        driveStraight(-10, 1, 1, 0);
         intakeFront.setPower(0); intakeBack.setPower(0);
 
         // Collect / move to next
@@ -188,26 +192,27 @@ public class Auto9BALLFrontBlue extends LinearOpMode {
         intakeBack.setPower(-0.5);
 
         // MIRROR TURN 45 -> -45
-        turnDegrees(-45);
+        turnDegrees(-53);
 
         // MIRROR STRAFE RIGHT -> LEFT
-        strafeRight(25.8, 1, 0);
+        strafeRight(30, 1, 0);
 //
 //        // MIRROR STRAFE RIGHT -> LEFT
 //        strafeLeft(12.7, 1, 0);
 
-        driveStraight(42.5, 0.68, 0.68, 0);
-        driveStraight(-12.5, 1, 1, 0);
+        driveStraight(33, 0.68, 0.68, 0);
+        driveStraight(-30, 1, 1, 0);
 
         // MIRROR DIAGONAL RightBackward -> LeftBackward
-        driveDiagonalRightForward(-20, 1, 0);
+//        driveDiagonalRightForward(-24, 1, 0);
+        strafeLeft(30,1,0);
 
         // MIRROR TURN -55 -> +55
-        turnDegrees(55);
+        turnDegrees(62);
 
         // MIRROR STRAFE LEFT -> RIGHT
-        strafeLeft(23, 1, 0);
-        driveStraight(25,1,1,0);
+//        strafeLeft(16, 1, 0);
+        driveStraight(5,1,1,0);
 
         // Shoot 3
         startShooter(SHOOTER_VELOCITY_BALL7);
@@ -222,7 +227,7 @@ public class Auto9BALLFrontBlue extends LinearOpMode {
 
         stopShooter();
         intakeFront.setPower(0); intakeBack.setPower(0);
-        strafeRight(10,1,0);
+        strafeRight(15,1,0);
     }
 
 
