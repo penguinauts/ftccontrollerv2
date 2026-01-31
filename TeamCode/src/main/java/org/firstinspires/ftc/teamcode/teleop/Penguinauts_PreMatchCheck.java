@@ -50,12 +50,14 @@
 
 package org.firstinspires.ftc.teamcode.teleop;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp(name="Penguinauts: Pre-Match Check", group="Penguinauts")
+@Disabled
 public class Penguinauts_PreMatchCheck extends LinearOpMode {
 
     // Drive motors

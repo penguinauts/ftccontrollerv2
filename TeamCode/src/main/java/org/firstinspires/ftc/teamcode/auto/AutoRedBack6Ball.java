@@ -36,7 +36,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
  * - Heading correction using IMU
  */
 @Config
-@Autonomous(name = "Auto Red Back 6Ball", group = "Auto")
+@Autonomous(name = "Red - 6Ball - Back", group = "Red")
 public class AutoRedBack6Ball extends LinearOpMode {
 
     // ========== HARDWARE ==========

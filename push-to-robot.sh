@@ -34,7 +34,7 @@ if ! command -v adb &> /dev/null; then
     echo -e "${YELLOW}ADB (Android Debug Bridge) is not installed or not in PATH.${NC}"
     echo ""
     echo -e "Please install Android Studio and add ADB to your PATH:"
-    echo -e "  Mac/Linux: export PATH=\"\$PATH:\$HOME/Library/Android/sdk/platform-tools\""
+    echo -e "  Mac/Linux: export PATH=\"/Users/stamirisa/Library/Android/sdk/platform-tools/adb\""
     echo -e "  Or add to ~/.zshrc or ~/.bashrc"
     echo ""
     exit 1
