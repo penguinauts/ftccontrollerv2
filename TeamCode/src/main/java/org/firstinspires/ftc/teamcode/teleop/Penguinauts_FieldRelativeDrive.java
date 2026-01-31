@@ -7,7 +7,7 @@
  * DRIVE CONTROLS:
  * - Left stick: Drive in any direction (field-relative)
  * - Right stick: Rotate left/right
- * - A button: Reset field orientation (set current direction as forward)
+ * - Back button: Reset field orientation (set current direction as forward)
  * - Drive speed: 63% (fixed)
  *
  * SHOOTER CONTROLS:
@@ -281,7 +281,7 @@ public class Penguinauts_FieldRelativeDrive extends LinearOpMode {
         telemetry.addData("", "");
         telemetry.addData("DRIVE Controls", "Left stick: Drive (field-relative)");
         telemetry.addData("", "Right stick: Rotate");
-        telemetry.addData("", "A: Reset field orientation (when not shooting)");
+        telemetry.addData("", "Back: Reset field orientation");
         
         // Show shooter controls if at least one motor is available
         if (shooterLeft != null || shooterRight != null) {
@@ -340,10 +340,8 @@ public class Penguinauts_FieldRelativeDrive extends LinearOpMode {
             double lateral = gamepad1.left_stick_x;   // Strafe left/right
             double yaw = gamepad1.right_stick_x;      // Rotate left/right
 
-            // Reset field orientation with A button (only if back intake not being used)
-            // Note: A button also controls back intake reverse
-            if (gamepad1.a && intakeBack == null) {
-                // Only reset IMU if back intake is not configured (A is used for back intake)
+            // Reset field orientation with Back button (always available)
+            if (gamepad1.back) {
                 imu.resetYaw();
             }
 

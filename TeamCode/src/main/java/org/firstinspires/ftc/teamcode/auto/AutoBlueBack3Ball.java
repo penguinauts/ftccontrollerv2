@@ -116,7 +116,8 @@ public class AutoBlueBack3Ball extends LinearOpMode {
         // ===== PHASE 2: Park =====
         updateTelemetry("Phase 2", "Parking");
         turnDegrees(-TURN_TO_GOAL);
-        strafeLeft(PARK_STRAFE, 0);
+        double heading = getHeading();  // Get actual IMU heading after turn
+        strafeLeft(PARK_STRAFE, heading);
 
         // ===== CLEANUP =====
         stopAll();

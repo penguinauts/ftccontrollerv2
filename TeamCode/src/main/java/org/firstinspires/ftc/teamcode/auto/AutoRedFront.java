@@ -135,25 +135,27 @@ public class AutoRedFront extends LinearOpMode {
 
         // Turn toward the first ball stack
         turnDegrees(PHASE2_TURN_ANGLE);
+        double heading = getHeading();  // Capture actual IMU heading after turn
 
         // Strafe right to align with balls
-        strafeRight(PHASE2_STRAFE_TO_BALLS, 0);
+        strafeRight(PHASE2_STRAFE_TO_BALLS, heading);
 
         // Start intakes before driving into balls
         updateTelemetry("Phase 2", "Collecting balls 4-6");
         startIntakeForCollection();
 
         // Drive forward slowly to collect balls
-        driveStraight(PHASE2_DRIVE_TO_BALLS, PHASE2_DRIVE_POWER_COLLECT, 0);
+        driveStraight(PHASE2_DRIVE_TO_BALLS, PHASE2_DRIVE_POWER_COLLECT, heading);
 
         // Drive backward to clear the ball area
-        driveStraight(PHASE2_DRIVE_BACK, PHASE2_DRIVE_BACK_POWER, 0);
+        driveStraight(PHASE2_DRIVE_BACK, PHASE2_DRIVE_BACK_POWER, heading);
 
         // Strafe left back toward shooting position
-        strafeLeft(PHASE2_STRAFE_BACK, 0);
+        strafeLeft(PHASE2_STRAFE_BACK, heading);
 
         // Turn back to face the goal
         turnDegrees(-PHASE2_TURN_ANGLE);
+        heading = getHeading();  // Capture actual IMU heading after turn
 
         // Spin up shooter and shoot balls 4-6
         updateTelemetry("Phase 2", "Shooting balls 4-6");
@@ -165,25 +167,27 @@ public class AutoRedFront extends LinearOpMode {
 
         // Turn toward the second ball stack
         turnDegrees(PHASE2_TURN_ANGLE);
+        heading = getHeading();  // Capture actual IMU heading after turn
 
         // Strafe further right to reach second stack
-        strafeRight(PHASE3_STRAFE_TO_BALLS, 0);
+        strafeRight(PHASE3_STRAFE_TO_BALLS, heading);
 
         // Start intakes before driving into balls
         updateTelemetry("Phase 3", "Collecting balls 7-9");
         startIntakeForCollection();
 
         // Drive forward slowly to collect balls
-        driveStraight(PHASE3_DRIVE_TO_BALLS, PHASE2_DRIVE_POWER_COLLECT, 0);
+        driveStraight(PHASE3_DRIVE_TO_BALLS, PHASE2_DRIVE_POWER_COLLECT, heading);
 
         // Drive backward to clear the ball area
-        driveStraight(PHASE3_DRIVE_BACK, PHASE2_DRIVE_BACK_POWER, 0);
+        driveStraight(PHASE3_DRIVE_BACK, PHASE2_DRIVE_BACK_POWER, heading);
 
         // Strafe left back toward shooting position
-        strafeLeft(PHASE3_STRAFE_BACK, 0);
+        strafeLeft(PHASE3_STRAFE_BACK, heading);
 
         // Turn back to face the goal
         turnDegrees(-PHASE2_TURN_ANGLE);
+        heading = getHeading();  // Capture actual IMU heading after turn
 
         // Spin up shooter and shoot balls 7-9
         updateTelemetry("Phase 3", "Shooting balls 7-9");
@@ -194,7 +198,7 @@ public class AutoRedFront extends LinearOpMode {
         updateTelemetry("Parking", "Moving to park position");
 
         // Strafe right to parking zone
-        strafeRight(PARK_STRAFE, 0);
+        strafeRight(PARK_STRAFE, heading);
 
         // ===== CLEANUP =====
         stopAll();

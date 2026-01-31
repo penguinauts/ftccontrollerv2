@@ -120,7 +120,8 @@ public class AutoRedBack3Ball extends LinearOpMode {
         // ===== PHASE 2: Park =====
         updateTelemetry("Phase 2", "Parking");
         turnDegrees(-TURN_TO_GOAL);
-        strafeRight(PARK_STRAFE, 0);                              // MIRRORED: Right instead of Left
+        double heading = getHeading();  // Get actual IMU heading after turn
+        strafeRight(PARK_STRAFE, heading);                        // MIRRORED: Right instead of Left
 
         // ===== CLEANUP =====
         stopAll();
